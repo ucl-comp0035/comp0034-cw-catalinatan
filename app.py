@@ -5,7 +5,8 @@ import pandas as pd
 from dash.exceptions import PreventUpdate
 
 # Create dataframe
-df = pd.read_excel('data/employment_prepared.xlsx')
+data_path = Path(__file__).parent / 'data' / 'employment_prepared.xlsx'
+df = pd.read_excel(data_path)
 
 # Variable that defines the meta tag for the viewport
 meta_tags = [
@@ -109,9 +110,10 @@ app.layout = dbc.Container([
         ),
 
     dbc.Row([
+        dbc.Col(html.P("Selection filters"),width=2),
         dbc.Col(region_dropdown, width=4),
         dbc.Col(year_dropdown, width=4),
-        dbc.Col(clear_button, width=4)
+        dbc.Col(clear_button, width=2)
     ]),
 
     dbc.Row([
