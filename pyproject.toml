@@ -1,22 +1,12 @@
 # Basic project information
 [project]
-name = "comp0034-cw-catalinatan"
-version = "0.1.0"
-description = "Comparative Employment Analysis Tool"
+name = "comp0034-tutorials"
+version = "2025.0.1"
 readme = "README.md"
-authors = [
-    { name = "Catalina Angelia", email = "catalina.angelia@example.com" }
-]
-dependencies = [
-    "dash",
-    "dash-bootstrap-components",
-    "pandas",
-    "plotly"
-]
 
 # Most students will use setuptools, though poetry is also an option
 [build-system]
-requires = ["setuptools", "setuptools_scm"]
+requires = ["setuptools",  "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 # Setuptools configuration see https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#src-layout
