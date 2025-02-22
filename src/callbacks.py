@@ -187,6 +187,7 @@ def register_callbacks(app):
 
         return selected_region, selected_year
     
+   
     @app.callback(
         Output("highest-disparity-region", "children"),
         Output("highest-disparity-percentage", "children"),
@@ -283,5 +284,15 @@ def register_callbacks(app):
 
         return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
     
-    # @app.callback(
-    #     Output()
+    @app.callback(
+        Output("summary-stats", "style"),
+        Input("display-summary-button", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def toggle_summary_stats(n_clicks):
+        """
+        Toggle the display of summary statistics based on the button click.
+        """
+        if n_clicks % 2 == 1:
+            return {"display": "block"}
+        return {"display": "none"}

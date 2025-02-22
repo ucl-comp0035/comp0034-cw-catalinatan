@@ -2,7 +2,7 @@ from dash import dcc, html
 import dash_bootstrap_components as dbc
 import pandas as pd
 from pathlib import Path
-import dash_daq as daq
+# import dash-daq as daq
 
 # Create dataframe
 data_path = Path(__file__).parent.parent / 'data' / 'employment_prepared.xlsx'
@@ -69,9 +69,9 @@ clear_button = html.Button('Clear selections', id='clear-button', n_clicks=0)
 save_filters_button = html.Button('Save filters', id='save-filters-button', n_clicks=0)
 
 # Display summary statistics button
-display_summary_button = daq.BooleanSwitch(id='display-summary-button', on=False)
+display_summary_button = html.Button('Display summary',id='display-summary-button', n_clicks=0)
 
-summary_stats = dbc.Card([
+gender_disparity_stats = dbc.Card([
     dbc.CardHeader(html.H4("Gender Disparity Statistics", className="text-center")),
     dbc.CardBody([
         html.H1(["Summary Statistics for ", html.Span(id='selected-region'), " in ", html.Span(id='selected-year')]),
@@ -115,6 +115,21 @@ summary_stats = dbc.Card([
                     ])
                 ], className="shadow-sm")
             ], md=6)
-        ]),
+        ])
+    ])
+])
+
+occupation_stats = dbc.Card([
+    dbc.CardHeader(html.H4("Occupation Statistics", className="text-center")),
+    dbc.CardBody([
+        html.H1(["Summary Statistics for Occupations"]),
+        # Add more components as needed
+    ])
+])
+
+summary_stats = dbc.Card([
+    dcc.Tabs(id='summary-tabs', children=[
+        dcc.Tab(label='Gender Disparity Statistics', children=[gender_disparity_stats]),
+        dcc.Tab(label='Occupation Statistics', children=[occupation_stats]),
     ])
 ], className="shadow", id="summary-stats", style={"display": "none"})

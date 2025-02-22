@@ -2,7 +2,7 @@ from dash import Dash
 import dash_bootstrap_components as dbc
 from layout import app_layout
 from callbacks import register_callbacks
-import dash_daq as daq
+# import dash_daq as daq
 
 # Define meta tags for the viewport
 meta_tags = [
