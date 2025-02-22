@@ -124,7 +124,7 @@ def create_disparity_map(disparity_df, selected_year):
             'Region': False  # Clean up hover data
         },
         title=(
-            f"Gender Disparity Map in Employment for {selected_year}"
+            f"Gender Disparity Map in Employment for {selected_year} "
             "by Occupation Type"
         ),
         scope='europe',

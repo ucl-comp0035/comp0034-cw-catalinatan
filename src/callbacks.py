@@ -1,6 +1,8 @@
 from dash import Output, Input, State, callback_context
+from dash.dependencies import ALL, MATCH  # Add MATCH import
 from dash.exceptions import PreventUpdate
 from components import full_descriptions, df
+import dash_bootstrap_components as dbc
 from charts import (
     create_bar_chart,
     create_pie_chart,
@@ -8,12 +10,82 @@ from charts import (
     create_area_chart
 )
 from filter_data_functions import filter_dataframe, prepare_disparity_df
-
+import json
 
 def register_callbacks(app):
     """
     Register all callbacks for the Dash app.
     """
+    @app.callback(
+        Output("saved-analyses-menu", "children"),
+        Output("saved-analyses-store", "data"),
+        Input("save-filters-button", "n_clicks"),
+        State("region-dropdown", "value"),
+        State("year-dropdown", "value"),
+        State("occupation-type-slider", "value"),
+        State("saved-analyses-store", "data"),
+        State("saved-analyses-menu", "children"),
+        prevent_initial_call=True,
+    )
+    def save_filters(n_clicks, region, year, occupation, current_data, current_menu_items):
+        if not n_clicks:
+            raise PreventUpdate
+
+        new_analysis = {
+            "region": region,
+            "year": year,
+            "occupation": occupation
+        }
+
+        updated_data = current_data + [new_analysis]
+        new_menu_item = dbc.DropdownMenuItem(
+            f"Analysis {len(updated_data)}: {region}, {year}",
+            id={"type": "saved-analysis", "index": len(updated_data)},
+            n_clicks=0
+        )
+
+        return current_menu_items + [new_menu_item], updated_data
+
+    @app.callback(
+        [
+            Output("region-dropdown", "value"),
+            Output("year-dropdown", "value"),
+            Output("occupation-type-slider", "value")
+        ],
+        [
+            Input({"type": "saved-analysis", "index": ALL}, "n_clicks"),
+            Input('clear-button', 'n_clicks')
+        ],
+        [
+            State("saved-analyses-store", "data"),
+            State('region-dropdown', 'value'),
+            State('year-dropdown', 'value'),
+            State('occupation-type-slider', 'value')
+        ],
+        prevent_initial_call=True,
+    )
+
+    def manage_dropdowns(saved_n_clicks, clear_n_clicks, data, region_value, year_value, occupation_value):
+        ctx = callback_context
+        if not ctx.triggered:
+            raise PreventUpdate
+
+        triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if triggered_id == 'clear-button':
+            return None, None, 1
+
+        try:
+            triggered_id = json.loads(triggered_id)
+            if triggered_id.get("type") == "saved-analysis":
+                analysis_index = triggered_id["index"] - 1
+                if 0 <= analysis_index < len(data):
+                    analysis_data = data[analysis_index]
+                    return analysis_data["region"], analysis_data["year"], analysis_data["occupation"]
+        except json.JSONDecodeError:
+            pass
+
+        return region_value, year_value, occupation_value
 
     @app.callback(
         Output('occupation-type-slider', 'tooltip'),
@@ -28,29 +100,6 @@ def register_callbacks(app):
             "always_visible": True,
             "template": f"{full_descriptions[value]}"
         }
-
-    @app.callback(
-        [Output('region-dropdown', 'value'),
-         Output('year-dropdown', 'value'),
-         Output('occupation-type-slider', 'value')],
-        Input('clear-button', 'n_clicks'),
-        [State('region-dropdown', 'value'),
-         State('year-dropdown', 'value'),
-         State('occupation-type-slider', 'value')]
-    )
-    def manage_dropdowns(n_clicks, region_value, year_value, occupation_value):
-        """
-        Clear the dropdown selections when the clear button is clicked.
-        """
-        ctx = callback_context
-
-        if not ctx.triggered:
-            raise PreventUpdate
-
-        if ctx.triggered[0]['prop_id'].split('.')[0] == 'clear-button':
-            return None, None, 1
-
-        return region_value, year_value, occupation_value
 
     @app.callback(
         Output('stacked-bar-chart', 'figure'),
@@ -105,9 +154,6 @@ def register_callbacks(app):
             year=selected_year, occupation_prefix=occupation_prefix
         )
         disparity_df = prepare_disparity_df(filtered_df)
-        disparity_df['Disparity'] = (
-            disparity_df['Male'] - disparity_df['Female']
-        ).abs()
         return create_disparity_map(disparity_df, selected_year)
 
     @app.callback(
@@ -124,3 +170,118 @@ def register_callbacks(app):
         filtered_df = filter_dataframe(region=selected_region)
         disparity_df = prepare_disparity_df(filtered_df)
         return create_area_chart(disparity_df, selected_region)
+    @app.callback(
+        Output("selected-region", "children"),
+        Output("selected-year", "children"),
+        Input("region-dropdown", "value"),
+        Input("year-dropdown", "value"),
+    )
+    def update_selected_filters(selected_region, selected_year):
+        """
+        Update the selected region, year and occupation based on the selected
+        values.
+        """
+
+        if not selected_region or not selected_year:
+            raise PreventUpdate
+
+        return selected_region, selected_year
+    
+    @app.callback(
+        Output("highest-disparity-region", "children"),
+        Output("highest-disparity-percentage", "children"),
+        Input("occupation-type-slider", "value"),
+        Input("year-dropdown", "value"),
+    )
+    def update_highest_disparity_region(selected_occupation, selected_year):
+        """
+        Update the highest disparity region based on the selected occupation
+        and year.
+        """
+        if not selected_occupation or not selected_year:
+            raise PreventUpdate
+
+        occupation_prefix = f"{selected_occupation}:"
+        filtered_df = filter_dataframe(
+            year=selected_year, occupation_prefix=occupation_prefix
+        )
+        disparity_df = prepare_disparity_df(filtered_df)
+
+        highest_disparity_percentage = disparity_df['Disparity'].max()
+        highest_disparity_perc_idx = disparity_df['Disparity'].idxmax()
+        highest_disparity_region = disparity_df['Region'][highest_disparity_perc_idx]
+
+        return highest_disparity_region, f"{highest_disparity_percentage:.2f}%"
+    
+    @app.callback(
+        Output("highest-disparity-occupation", "children"),
+        Output("highest-disparity-occupation-percentage", "children"),
+        Input("region-dropdown", "value"),
+        Input("year-dropdown", "value"),
+        allow_duplicate=True
+    )
+    def update_highest_disparity_occupation_for_selected_region(selected_region, selected_year):
+        """
+        Update the highest disparity occupation based on the selected region
+        and year.
+        """
+        if not selected_region or not selected_year:
+            raise PreventUpdate
+
+        filtered_df = filter_dataframe(region=selected_region, year=selected_year)
+        disparity_df = prepare_disparity_df(filtered_df)
+
+        highest_disparity_percentage = disparity_df['Disparity'].max()
+        highest_disparity_perc_idx = disparity_df['Disparity'].idxmax()
+        highest_disparity_occupation = disparity_df['Occupation Type'][highest_disparity_perc_idx]
+
+        return highest_disparity_occupation, f"{highest_disparity_percentage:.2f}%"
+    
+    @app.callback(
+        Output("highest-male-employment-occupation","children"),
+        Output("highest-male-employment-percentage","children"),
+        Input("region-dropdown","value"),
+        Input("year-dropdown","value")
+    )
+    def update_highest_male_employment_occupation(selected_region, selected_year):
+        """
+        Update the highest male employment occupation based on the selected region
+        and year.
+        """
+        if not selected_region or not selected_year:
+            raise PreventUpdate
+        
+        filtered_df = filter_dataframe(region=selected_region, year=selected_year)
+        male_df = filtered_df[filtered_df['Gender'] == 'Male']
+
+        highest_male_employment_percentage = male_df['Percentage Employed (Relative to Total Employment in the Year)'].max()
+        highest_male_employ_perc_idx = male_df['Percentage Employed (Relative to Total Employment in the Year)'].idxmax()
+        highest_male_employment_occupation = male_df['Occupation Type'][highest_male_employ_perc_idx]
+
+        return highest_male_employment_occupation, f"{highest_male_employment_percentage:.2f}%"
+
+    @app.callback(
+        Output("highest-female-employment-occupation","children"),
+        Output("highest-female-employment-percentage","children"),
+        Input("region-dropdown","value"),
+        Input("year-dropdown","value")
+    )
+    def update_highest_female_employment_occupation(selected_region, selected_year):
+        """
+        Update the highest female employment occupation based on the selected region
+        and year.
+        """
+        if not selected_region or not selected_year:
+            raise PreventUpdate
+        
+        filtered_df = filter_dataframe(region=selected_region, year=selected_year)
+        female_df = filtered_df[filtered_df['Gender'] == 'Female']
+
+        highest_female_employment_percentage = female_df['Percentage Employed (Relative to Total Employment in the Year)'].max()
+        highest_female_employ_perc_idx = female_df['Percentage Employed (Relative to Total Employment in the Year)'].idxmax()
+        highest_female_employment_occupation = female_df['Occupation Type'][highest_female_employ_perc_idx]
+
+        return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
+    
+    # @app.callback(
+    #     Output()

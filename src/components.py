@@ -2,6 +2,7 @@ from dash import dcc, html
 import dash_bootstrap_components as dbc
 import pandas as pd
 from pathlib import Path
+import dash_daq as daq
 
 # Create dataframe
 data_path = Path(__file__).parent.parent / 'data' / 'employment_prepared.xlsx'
@@ -63,3 +64,57 @@ occupation_type_slider = html.Div([
 
 # Clear button
 clear_button = html.Button('Clear selections', id='clear-button', n_clicks=0)
+
+# Save filters button 
+save_filters_button = html.Button('Save filters', id='save-filters-button', n_clicks=0)
+
+# Display summary statistics button
+display_summary_button = daq.BooleanSwitch(id='display-summary-button', on=False)
+
+summary_stats = dbc.Card([
+    dbc.CardHeader(html.H4("Gender Disparity Statistics", className="text-center")),
+    dbc.CardBody([
+        html.H1(["Summary Statistics for ", html.Span(id='selected-region'), " in ", html.Span(id='selected-year')]),
+        dbc.Row([
+            dbc.Col([
+                html.H5("Highest Overall Gender Disparity for the Year", className="mb-3"),
+                dbc.Card([
+                    dbc.CardBody([
+                        html.P(["Region: ", html.Span(id='highest-disparity-region')], className="mb-0 text-muted"),
+                        html.P(["Disparity: ", html.Span(id='highest-disparity-percentage')], className="text-danger"),
+                    ])
+                ], className="mb-3 shadow-sm")
+            ], md=6),
+            dbc.Col([
+                html.H5("Highest Disparity by Occupation", className="mb-3"),
+                dbc.Card([
+                    dbc.CardBody([
+                        html.P(["Occupation: ", html.Span(id='highest-disparity-occupation')], className="mb-0 text-muted"),
+                        html.P(["Disparity: ", html.Span(id='highest-disparity-occupation-percentage')], className="text-danger"),
+                    ])
+                ], className="mb-3 shadow-sm")
+            ], md=6)
+        ]),
+        html.H5("Highest Employment % by Gender", className="mb-3"),
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader(html.H6("Male", className="mb-0")),
+                    dbc.CardBody([
+                        html.P(["Occupation: ", html.Span(id='highest-male-employment-occupation')], className="mb-0 text-muted"),
+                        html.P(["Percentage: ", html.Span(id='highest-male-employment-percentage')], className="text-primary"),
+                    ])
+                ], className="shadow-sm")
+            ], md=6),
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader(html.H6("Female", className="mb-0")),
+                    dbc.CardBody([
+                        html.P(["Occupation: ", html.Span(id='highest-female-employment-occupation')], className="mb-0 text-muted"),
+                        html.P(["Percentage: ", html.Span(id='highest-female-employment-percentage')], className="mb-0 text-primary"),
+                    ])
+                ], className="shadow-sm")
+            ], md=6)
+        ]),
+    ])
+], className="shadow", id="summary-stats", style={"display": "none"})
