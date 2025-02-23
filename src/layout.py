@@ -9,7 +9,6 @@ from components import (
     display_summary_button,
     summary_stats  # Import summary_stats
 )
-
 # Define the layout of the app
 app_layout = dbc.Container([
     dbc.NavbarSimple(
@@ -38,7 +37,7 @@ app_layout = dbc.Container([
     dbc.Row([
         dbc.Col(
             dbc.Card(dcc.Graph(id='stacked-bar-chart'), body=True),
-            width=6
+            width=6,
         ),
         dbc.Col(dbc.Card(dcc.Graph(id='pie-chart'), body=True), width=6)
     ]),
@@ -49,17 +48,17 @@ app_layout = dbc.Container([
                 dcc.Graph(id='disparity-map'),
                 occupation_type_slider
             ]),
-            width=6
+            width=6,
         ),
         dbc.Col(
             dbc.Card(dcc.Graph(id='stacked-area-chart'), body=True),
-            width=6
+            width=6,
         )
     ]),
 
     dbc.Row([
         dbc.Col(summary_stats),  # Add summary_stats component
-    ]),
+    ], style={'backgroundColor': '#000000'}),
 
     dcc.Store(id='saved-analyses-store', data=[])
 ])

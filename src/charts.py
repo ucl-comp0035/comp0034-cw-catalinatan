@@ -1,4 +1,5 @@
 import plotly.express as px
+import plotly.graph_objects as go
 
 
 def create_bar_chart(filtered_df, selected_region, selected_year):
@@ -31,7 +32,7 @@ def create_bar_chart(filtered_df, selected_region, selected_year):
             'Short Occupation Type': False,
             'Gender': True,
             'Percentage Employed (Relative to Total Employment in the Year)': True
-        }
+        },
     )
 
     fig.update_layout(
@@ -47,7 +48,8 @@ def create_bar_chart(filtered_df, selected_region, selected_year):
         ),
         yaxis=dict(
             title_font=dict(size=12)
-        )
+        ),
+        font=dict(color='#000000')
     )
     return fig
 
@@ -85,6 +87,7 @@ def create_pie_chart(disparity_df, selected_region, selected_year):
             yanchor='top'
         ),
         margin=dict(l=50, r=200, t=50, b=50),  # Increase right margin
+        font=dict(color='#000000')
     )
     return fig
 
@@ -156,7 +159,8 @@ def create_disparity_map(disparity_df, selected_year):
             y=0.95,
             xanchor='center',
             yanchor='top'
-        )
+        ),
+        font=dict(color='#000000')
     )
     return fig
 
@@ -190,6 +194,7 @@ def create_area_chart(disparity_df, selected_region):
         yaxis_title="Percentage Employed",
         legend_title="Occupation Type",
         title_x=0.5,
+        font=dict(color='#000000')
     )
 
     fig.update_xaxes(

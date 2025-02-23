@@ -284,6 +284,29 @@ def register_callbacks(app):
 
         return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
     
+     @app.callback(
+        Output("highest-occupation-disparity","children"),
+        Output("highest-occupation-percentage","children"),
+        Input("region-dropdown","value"),
+        Input("year-dropdown","value")
+    )
+    def update_highest_female_employment_occupation(selected_region, selected_year):
+        """
+        Update the highest female employment occupation based on the selected region
+        and year.
+        """
+        if not selected_region or not selected_year:
+            raise PreventUpdate
+        
+        filtered_df = filter_dataframe(region=selected_region, year=selected_year)
+        female_df = filtered_df[filtered_df['Gender'] == 'Female']
+
+        highest_female_employment_percentage = female_df['Percentage Employed (Relative to Total Employment in the Year)'].max()
+        highest_female_employ_perc_idx = female_df['Percentage Employed (Relative to Total Employment in the Year)'].idxmax()
+        highest_female_employment_occupation = female_df['Occupation Type'][highest_female_employ_perc_idx]
+
+        return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
+    
     @app.callback(
         Output("summary-stats", "style"),
         Input("display-summary-button", "n_clicks"),
@@ -296,3 +319,8 @@ def register_callbacks(app):
         if n_clicks % 2 == 1:
             return {"display": "block"}
         return {"display": "none"}
+
+    @app.callback(
+        Output("data_attribution","is_open")
+        Input("data-attribution-button","n_clicks"),
+    )

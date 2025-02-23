@@ -69,14 +69,15 @@ clear_button = html.Button('Clear selections', id='clear-button', n_clicks=0)
 save_filters_button = html.Button('Save filters', id='save-filters-button', n_clicks=0)
 
 # Display summary statistics button
-display_summary_button = html.Button('Display summary',id='display-summary-button', n_clicks=0)
+display_summary_button = html.Button('Summary Statistics',id='display-summary-button', n_clicks=0)
+
+# Gender dropdown
+gender_dropdown = dcc.Dropdown(['Male','Female','All'],value=None, id='gender-dropdown')
 
 gender_disparity_stats = dbc.Card([
     dbc.CardHeader(html.H4("Gender Disparity Statistics", className="text-center")),
     dbc.CardBody([
-        html.H1(["Summary Statistics for ", html.Span(id='selected-region'), " in ", html.Span(id='selected-year')]),
         dbc.Row([
-            dbc.Col([
                 html.H5("Highest Overall Gender Disparity for the Year", className="mb-3"),
                 dbc.Card([
                     dbc.CardBody([
@@ -84,7 +85,9 @@ gender_disparity_stats = dbc.Card([
                         html.P(["Disparity: ", html.Span(id='highest-disparity-percentage')], className="text-danger"),
                     ])
                 ], className="mb-3 shadow-sm")
-            ], md=6),
+                ], md=6),
+        html.H1(["For ", html.Span(id='selected-region'), " in ", html.Span(id='selected-year')]),
+        dbc.Row([
             dbc.Col([
                 html.H5("Highest Disparity by Occupation", className="mb-3"),
                 dbc.Card([
@@ -133,3 +136,19 @@ summary_stats = dbc.Card([
         dcc.Tab(label='Occupation Statistics', children=[occupation_stats]),
     ])
 ], className="shadow", id="summary-stats", style={"display": "none"})
+
+data_attribution = html.Div(
+    [
+        dbc.Button("Dataset", id="open-offcanvas", n_clicks=0),
+        dbc.Offcanvas(
+            html.P(
+                "The data used in this analysis is sourced from the Greater London Authority, under the Open Government Licence v2.0."
+            ),
+
+            id="dataset-offcanvas",
+            scrollable=True,
+            title="Dataset Attribution",
+            is_open=False,
+        ),
+    ]
+)
