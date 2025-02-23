@@ -9,7 +9,7 @@ from charts import (
     create_disparity_map,
     create_area_chart
 )
-from filter_data_functions import filter_dataframe, prepare_disparity_df
+from filter_data_functions import filter_dataframe, prepare_disparity_df, find_highest_dis_by_gender, find_overall_highest_disparity # Ensure prepare_year_disparity_df is imported
 import json
 
 def register_callbacks(app):
@@ -252,8 +252,7 @@ def register_callbacks(app):
         if not selected_region or not selected_year:
             raise PreventUpdate
         
-        filtered_df = filter_dataframe(region=selected_region, year=selected_year)
-        male_df = filtered_df[filtered_df['Gender'] == 'Male']
+        male_df = filter_dataframe(region=selected_region, year=selected_year, gender='Male')
 
         highest_male_employment_percentage = male_df['Percentage Employed (Relative to Total Employment in the Year)'].max()
         highest_male_employ_perc_idx = male_df['Percentage Employed (Relative to Total Employment in the Year)'].idxmax()
@@ -275,8 +274,7 @@ def register_callbacks(app):
         if not selected_region or not selected_year:
             raise PreventUpdate
         
-        filtered_df = filter_dataframe(region=selected_region, year=selected_year)
-        female_df = filtered_df[filtered_df['Gender'] == 'Female']
+        female_df = filter_dataframe(region=selected_region, year=selected_year, gender='Female')
 
         highest_female_employment_percentage = female_df['Percentage Employed (Relative to Total Employment in the Year)'].max()
         highest_female_employ_perc_idx = female_df['Percentage Employed (Relative to Total Employment in the Year)'].idxmax()
@@ -284,13 +282,19 @@ def register_callbacks(app):
 
         return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
     
-     @app.callback(
-        Output("highest-occupation-disparity","children"),
-        Output("highest-occupation-percentage","children"),
-        Input("region-dropdown","value"),
-        Input("year-dropdown","value")
+    # Occupation disparity 
+    @app.callback(
+        Output("highest-m-year-disparity-percentage","children"),
+        Output("highest-m-year-disparity-occupation","children"),
+        Output("highest-m-year-disparity-region","children"),
+        Output("highest-f-year-disparity-percentage","children"),
+        Output("highest-f-year-disparity-occupation","children"),
+        Output("highest-f-year-disparity-region","children"),
+        Output("highest-year-disparity-gender","children"),
+        Output("highest-year-disparity-region","children"),
+        Input("region-dropdown","value")
     )
-    def update_highest_female_employment_occupation(selected_region, selected_year):
+    def update_highest_total_employment_occupation(selected_region, selected_year):
         """
         Update the highest female employment occupation based on the selected region
         and year.
@@ -299,13 +303,20 @@ def register_callbacks(app):
             raise PreventUpdate
         
         filtered_df = filter_dataframe(region=selected_region, year=selected_year)
-        female_df = filtered_df[filtered_df['Gender'] == 'Female']
+        prepared_df = prepare_disparity_df(filtered_df)
+        prepare_year_disparity_df = prepare_year_disparity_df(filtered_df)
 
-        highest_female_employment_percentage = female_df['Percentage Employed (Relative to Total Employment in the Year)'].max()
-        highest_female_employ_perc_idx = female_df['Percentage Employed (Relative to Total Employment in the Year)'].idxmax()
-        highest_female_employment_occupation = female_df['Occupation Type'][highest_female_employ_perc_idx]
+        highest_total_employment_percentage = prepared_df['Total Employment'].max()
+        highest_total_employ_perc_idx = prepared_df['Total Employment'].idxmax()
+        highest_total_employment_occupation = prepared_df['Occupation Type'][highest_total_employ_perc_idx]
 
-        return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
+        highest_year_disparity_percentage = prepare_year_disparity_df['Year Disparity'].max()
+        highest_year_disparity_perc_idx = prepare_year_disparity_df['Year Disparity'].idxmax()
+        highest_year_disparity_occupation = prepare_year_disparity_df['Occupation Type'][highest_year_disparity_perc_idx]
+        highest_year_disparity_gender = prepare_year_disparity_df['Gender'][highest_year_disparity_perc_idx]
+        highest_year_disparity_region = prepare_year_disparity_df['Region'][highest_year_disparity_perc_idx]
+
+        return highest_total_employment_occupation, f"{highest_total_employment_percentage:.2f}%", f"{highest_year_disparity_percentage:.2f}", highest_year_disparity_occupation, highest_year_disparity_gender, highest_year_disparity_region
     
     @app.callback(
         Output("summary-stats", "style"),
@@ -321,6 +332,15 @@ def register_callbacks(app):
         return {"display": "none"}
 
     @app.callback(
-        Output("data_attribution","is_open")
-        Input("data-attribution-button","n_clicks"),
+        Output("data_attribution","is_open"),
+        Input("data-attribution-button","n_clicks")
     )
+
+    def toggle_data_attribution(n_clicks, is_open):
+        """
+        Toggle the display of data attribution based on the button click.
+        """
+        if n_clicks:
+            return not is_open
+        return is_open
+    
