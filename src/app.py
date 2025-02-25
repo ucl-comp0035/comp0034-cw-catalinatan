@@ -11,7 +11,7 @@ meta_tags = [
 
 # Define external stylesheets, using Bootstrap styling from
 # dash_bootstrap_components (dbc)
-external_stylesheets = [dbc.themes.BOOTSTRAP]
+external_stylesheets = [dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP, 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css']
 
 # Initialize the Dash app with external stylesheets and meta tags
 app = Dash(

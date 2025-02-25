@@ -36,7 +36,7 @@ def prepare_year_pivot_df(disparity_df):
         fill_value=0
     ).reset_index()
 
-    year_pivot_df['Year Disparity'] = (year_pivot_df[2023] - year_pivot_df[2021]).abs()
+    year_pivot_df['Year Disparity'] = (year_pivot_df[2023] - year_pivot_df[2021])
     return year_pivot_df
 
 def prepare_disparity_df(filtered_df):
@@ -75,8 +75,12 @@ def find_highest_dis_by_gender(df, gender, region=None):
         value_name='Percentage Employed (Relative to Total Employment in the Year)'
     )
     specific_gender_df = melted_df[melted_df["Gender"] == gender]
-    highest_year_disparity_percentage = f"{specific_gender_df['Year Disparity'].max():.2f}"
-    highest_year_disparity_perc_idx = specific_gender_df['Year Disparity'].idxmax()
+    highest_absolute_year_disparity_perc = specific_gender_df['Year Disparity'].abs().max()
+    highest_year_disparity_perc_idx = specific_gender_df['Year Disparity'].abs().idxmax()
+    if specific_gender_df['Year Disparity'][highest_year_disparity_perc_idx] < 0:
+        highest_year_disparity_percentage = f"-{highest_absolute_year_disparity_perc:.2f}"
+    else:
+        highest_year_disparity_percentage = f"{highest_absolute_year_disparity_perc:.2f}"
     highest_year_disparity_occupation = specific_gender_df['Occupation Type'][highest_year_disparity_perc_idx]
     highest_disparity_region = specific_gender_df['Region'][highest_year_disparity_perc_idx]
     return highest_year_disparity_percentage, highest_year_disparity_occupation, highest_disparity_region
@@ -100,14 +104,10 @@ def find_overall_highest_disparity(df, region=None):
     if float(highest_male_disparity_perc) > float(highest_female_disparity_perc):
         return highest_male_disparity + ("Male",)
     elif float(highest_male_disparity_perc) == float(highest_female_disparity_perc):
-        return "Equal"
+        return highest_male_disparity + ("Equal",)
     else:
         return highest_female_disparity + ("Female",)
 
 highest_m_year_disparity_percentage, highest_m_year_disparity_occupation, highest_m_year_disparity_region = find_highest_dis_by_gender(df, "Male")
 highest_f_year_disparity_percentage, highest_f_year_disparity_occupation, highest_f_year_disparity_region = find_highest_dis_by_gender(df, "Female")
 highest_overall_disparity_percentage, highest_overall_disparity_occupation, highest_overall_disparity_region, highest_overall_disparity_gender = find_overall_highest_disparity(df)
-
-print(highest_m_year_disparity_percentage, highest_m_year_disparity_occupation, highest_m_year_disparity_region)
-print(highest_f_year_disparity_percentage, highest_f_year_disparity_occupation, highest_f_year_disparity_region)
-print(highest_overall_disparity_percentage, highest_overall_disparity_occupation, highest_overall_disparity_region, highest_overall_disparity_gender)

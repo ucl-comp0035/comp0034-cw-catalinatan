@@ -9,7 +9,16 @@ from filter_data_functions import (
     highest_m_year_disparity_region, 
     highest_f_year_disparity_percentage,
     highest_f_year_disparity_occupation,
-    highest_f_year_disparity_region)
+    highest_f_year_disparity_region,
+    highest_overall_disparity_percentage,
+    highest_overall_disparity_occupation,
+    highest_overall_disparity_region,
+    highest_overall_disparity_gender  
+)
+
+# Create dataframe
+data_path = Path(__file__).parent.parent / 'data' / 'employment_prepared.xlsx'
+df = pd.read_excel(data_path)
 
 # Dropdowns for region, year and occupation
 region_dropdown = dcc.Dropdown(
@@ -74,147 +83,315 @@ save_filters_button = html.Button('Save filters', id='save-filters-button', n_cl
 # Display summary statistics button
 display_summary_button = html.Button('Summary Statistics',id='display-summary-button', n_clicks=0)
 
+def get_metric_style(value):
+    """Return color and icon based on value positivity"""
+    if value >= 0:
+        return {"color": "success", "icon": "bi-arrow-up"}
+    return {"color": "danger", "icon": "bi-arrow-down"}
+
 # Summmary Gender Disparity Statistics
-gender_disparity_stats = dbc.Card([
-    dbc.CardHeader(html.H4("Gender Disparity Statistics", className="text-center")),
-    dbc.CardBody([
-        dbc.Row([
-            dbc.Col([
-                html.H5("Greatest Gender Disparity for the Year (Overall)", className="mb-3"),
-                dbc.Card([
-                    dbc.CardBody([
-                        html.P(["Region: ", html.Span(id='highest-disparity-region')], className="mb-0 text-muted"),
-                        html.P(["Disparity: ", html.Span(id='highest-disparity-percentage')], className="text-danger"),
-                    ])
-                ], className="mb-3 shadow-sm")
-            ], md=6)
-        ]),
-        html.H1(["For ", html.Span(id='selected-region'), " in ", html.Span(id='selected-year')]),
-        dbc.Row([
-            dbc.Col([
-                html.H5("Greatest Disparity by Occupation", className="mb-3"),
-                dbc.Card([
-                    dbc.CardBody([
-                        html.P(["Occupation: ", html.Span(id='highest-disparity-occupation')], className="mb-0 text-muted"),
-                        html.P(["Disparity: ", html.Span(id='highest-disparity-occupation-percentage')], className="text-danger"),
-                    ])
-                ], className="mb-3 shadow-sm")
-            ], md=6)
-        ]),
-    ])
-])
+gender_disparity_stats = dbc.Card(
+    [
+        dbc.CardHeader(
+            html.H4([
+                html.I(className="bi bi-gender-female me-2"),
+                html.I(className="bi bi-gender-male me-2"),
+                "Gender Disparity Analysis"
+            ], className="text-center text-white"),
+            className="bg-primary border-bottom border-3 border-warning"
+        ),
+        dbc.CardBody([
+            dbc.Row([
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H5("Greatest Overall Disparity", className="mb-0"),
+                            className="bg-light"
+                        ),
+                        dbc.CardBody([
+                            html.Div([
+                                html.I(className="bi bi-geo-alt-fill text-muted me-2"),
+                                html.Span("Region:", className="text-muted"),
+                                html.Span(id='highest-disparity-region', className="h5 ms-2")
+                            ], className="d-flex align-items-center mb-3"),
+                            html.Div([
+                                html.I(className="bi bi-bar-chart-line-fill me-2"),
+                                html.Span("Disparity:", className="text-muted"),
+                                html.Span(id='highest-disparity-percentage', className="h2 ms-2")
+                            ], className="d-flex align-items-center")
+                        ], className="border-start border-danger border-4 p-3")
+                    ], className="shadow-lg h-100"),
+                    md=6
+                ),
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H5(["Occupation Breakdown for ", html.Span(id='selected-region'), "in", html.Span(id='selected-year')], className="mb-0"),
+                            className="bg-light"
+                        ),
+                        dbc.CardBody([
+                            html.Div([
+                                html.I(className="bi bi-briefcase text-muted me-2"),
+                                html.Span("Occupation:", className="text-muted"),
+                                html.Span(id='highest-disparity-occupation', className="h5 ms-2")
+                            ], className="d-flex align-items-center mb-3"),
+                            html.Div([
+                                html.I(className="bi bi-percent text-muted me-2"),
+                                html.Span("Disparity:", className="text-muted"),
+                                html.Span(id='highest-disparity-occupation-percentage', className="h2 ms-2")
+                            ], className="d-flex align-items-center")
+                        ], className="border-start border-info border-4 p-3")
+                    ], className="shadow-lg h-100"),
+                    md=6
+                )
+            ], className="g-4")
+        ], className="p-4")
+    ],
+    className="my-4 shadow-lg"
+)
 
-# Occupation Statistics
-occupation_stats = dbc.Card([
-    dbc.CardHeader(html.H4("Occupation Statistics", className="text-center")),
-    dbc.CardBody([
-        html.H1(["For ", html.Span(id='selected-region'), " in ", html.Span(id='selected-year')]),
-        html.H5("Highest Employment Percentage (%)", className="mb-3"),
-        dbc.Row([
-            dbc.Card([
-                dbc.CardHeader(html.H6("Overall", className="mb-0")),
-                dbc.CardBody([
-                    html.P(["Occupation Type: ", html.Span(id='highest-employment-occupation')], className="mb-0 text-muted"),
-                    html.P(["Percentage (%): ", html.Span(id='highest-employment-percentage')], className="text-primary"),
-                ])
-            ], className="shadow-sm"),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6("Male", className="mb-0")),
-                    dbc.CardBody([
-                        html.P(["Occupation Type: ", html.Span(id='highest-male-employment-occupation')], className="mb-0 text-muted"),
-                        html.P(["Percentage (%): ", html.Span(id='highest-male-employment-percentage')], className="text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6("Female", className="mb-0")),
-                    dbc.CardBody([
-                        html.P(["Occupation Type: ", html.Span(id='highest-female-employment-occupation')], className="mb-0 text-muted"),
-                        html.P(["Percentage (%): ", html.Span(id='highest-female-employment-percentage')], className="mb-0 text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6)
-        ]),
-        html.H5("Greatest % Change in Employment between 2021 and 2023"),
-        dbc.Row(["For ", html.Span(id='selected-region')]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6('Overall',className="mb-0")),
-                    dbc.CardBody([
-                        html.P(["Occupation Type: ", html.Span(id='highest-year-disparity-occuptation')], className="mb-0 text-muted"),
-                        html.P(["Percentage Change: ", html.Span(id='highest-year-disparity-percentage')], className="text-primary"),
-                        html.P(["Gender: ", html.Span(id='highest-year-disparity-gender')]),
-                        html.P(["Region: ", html.Span(id='highest-year-disparity-region')])
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6('Male',className="mb-0")),
-                    dbc.CardBody([
-                        html.P([f"Occupation Type: {highest_m_year_disparity_occupation}"], className="mb-0 text-muted"),
-                        html.P([f"Region: {highest_m_year_disparity_region}"], className="mb-0 text-muted"),
-                        html.P([f"Percentage Change: {highest_m_year_disparity_percentage}"], className="text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6('Female',className="mb-0")),
-                    dbc.CardBody([
-                        html.P([f"Occupation Type: {highest_f_year_disparity_occupation}"], className="mb-0 text-muted"),
-                        html.P([f"Region: {highest_f_year_disparity_region}"], className="mb-0 text-muted"),
-                        html.P([f"Percentage Change: {highest_f_year_disparity_percentage}"], className="text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-        ]), 
-        dbc.Row(["Overall"]),
-        dbc.Row([
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6('Overall',className="mb-0")),
-                    dbc.CardBody([
-                        html.P([f"Occupation Type: {highest_overall_disparity_occupation}"], className="mb-0 text-muted"),
-                        html.P([f"Gender: {highest_overall_disparity_gender}"], className="mb-0 text-muted"),
-                        html.P([f"Region: {highest_overall_disparity_region}"], className="mb-0 text-muted"),
-                        html.P([f"Percentage Change: {highest_overall_disparity_percentage}"], className="text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6('Male',className="mb-0")),
-                    dbc.CardBody([
-                        html.P([f"Occupation Type: {highest_m_year_disparity_occupation}"], className="mb-0 text-muted"),
-                        html.P([f"Region: {highest_m_year_disparity_region}"], className="mb-0 text-muted"),
-                        html.P([f"Percentage Change: {highest_m_year_disparity_percentage}"], className="text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-            dbc.Col([
-                dbc.Card([
-                    dbc.CardHeader(html.H6('Female',className="mb-0")),
-                    dbc.CardBody([
-                        html.P([f"Occupation Type: {highest_f_year_disparity_occupation}"], className="mb-0 text-muted"),
-                        html.P([f"Region: {highest_f_year_disparity_region}"], className="mb-0 text-muted"),
-                        html.P([f"Percentage Change: {highest_f_year_disparity_percentage}"], className="text-primary"),
-                    ])
-                ], className="shadow-sm")
-            ], md=6),
-        ])
-    ])
-])
+occupation_stats = dbc.Card(
+    [
+        dbc.CardHeader(
+            html.H4(
+                [
+                    html.I(className="bi bi-briefcase me-2"), 
+                    "Occupation Statistics"
+                ],
+                className="text-center text-white"
+            ),
+            className="bg-success border-bottom border-3 border-warning"
+        ),
+        dbc.CardBody([
+            html.Div(
+                [
+                    html.I(className="bi bi-geo-alt me-2"),
+                    "For ",
+                    html.Span(id='selected-region', className="fw-bold"),
+                    " in ",
+                    html.Span(id='selected-year', className="fw-bold")
+                ],
+                className="h4 mb-4 text-muted d-flex align-items-center justify-content-center"
+            ),
+            
+            # Highest Employment Section
+            html.H5(
+                [
+                    html.I(className="bi bi-trophy me-2"),
+                    "Highest Employment Percentage (%)"
+                ],
+                className="mb-4 text-primary"
+            ),
+            dbc.Row([
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H6(
+                                [
+                                    html.I(className="bi bi-star-fill me-2"),
+                                    "Overall"
+                                ],
+                                className="mb-0 text-white"
+                            ),
+                            className="bg-warning"
+                        ),
+                        dbc.CardBody([
+                            html.Div(
+                                [
+                                    html.I(className="bi bi-briefcase me-2 text-muted"),
+                                    html.Span(id='highest-employment-occupation', className="h6")
+                                ],
+                                className="d-flex align-items-center mb-3"
+                            ),
+                            html.Div(
+                                [
+                                    html.I(className="bi bi-percent me-2 text-warning"),
+                                    html.Span(id='highest-employment-percentage', className="h2 fw-bold")
+                                ],
+                                className="d-flex align-items-center"
+                            )
+                        ], className="border-start border-warning border-4")
+                    ], className="shadow-lg h-100"),
+                    md=4
+                ),
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H6(
+                                [
+                                    html.I(className="bi bi-gender-male me-2"),
+                                    "Male"
+                                ],
+                                className="mb-0 text-white"
+                            ),
+                            className="bg-info"
+                        ),
+                        dbc.CardBody([
+                            html.P(
+                                [
+                                    html.I(className="bi bi-briefcase me-2 text-muted"),
+                                    html.Span(id='highest-male-employment-occupation')
+                                ],
+                                className="text-truncate mb-2"
+                            ),
+                            html.Div(
+                                [
+                                    html.I(className="bi bi-arrow-up-short text-success"),
+                                    html.Span(id='highest-male-employment-percentage', className="h4 text-success ms-2")
+                                ],
+                                className="d-flex align-items-center"
+                            )
+                        ], className="border-start border-info border-4")
+                    ], className="shadow-sm h-100"),
+                    md=4
+                ),
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H6(
+                                [
+                                    html.I(className="bi bi-gender-female me-2"),
+                                    "Female"
+                                ],
+                                className="mb-0 text-white"
+                            ),
+                            className="bg-pink"
+                        ),
+                        dbc.CardBody([
+                            html.P(
+                                [
+                                    html.I(className="bi bi-briefcase me-2 text-muted"),
+                                    html.Span(id='highest-female-employment-occupation')
+                                ],
+                                className="text-truncate mb-2"
+                            ),
+                            html.Div(
+                                [
+                                    html.I(className="bi bi-arrow-up-short text-success"),
+                                    html.Span(id='highest-female-employment-percentage', className="h4 text-success ms-2")
+                                ],
+                                className="d-flex align-items-center"
+                            )
+                        ], className="border-start border-pink border-4")
+                    ], className="shadow-sm h-100"),
+                    md=4
+                )
+            ], className="g-4 mb-5"),
+            
+            # Employment Change Section
+            html.H5(
+                [
+                    html.I(className="bi bi-activity me-2"),
+                    "Greatest % Change in Employment (2021-2023)"
+                ],
+                className="mb-4 text-primary border-bottom pb-2"
+            ),
+            dbc.Row([
+                # Overall Change Card
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H6([
+                                html.I(className="bi bi-globe me-2"),
+                                'Overall'
+                            ], className="mb-0 text-white"),
+                            className="bg-purple"
+                        ),
+                        dbc.CardBody([
+                            html.Div([
+                                html.I(className="bi bi-briefcase me-2 text-muted"),
+                                html.Span(f"Occupation: {highest_overall_disparity_occupation}", className="text-muted")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className=f"bi {get_metric_style(float(highest_overall_disparity_percentage))['icon']} me-2"),
+                                html.Span(f"{highest_overall_disparity_percentage}%", 
+                                        className=f"h4 text-{get_metric_style(float(highest_overall_disparity_percentage))['color']}")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className="bi bi-gender-ambiguous me-2 text-muted"),
+                                html.Span(f"Gender: {highest_overall_disparity_gender}")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className="bi bi-geo me-2 text-muted"),
+                                html.Span(f"Region: {highest_overall_disparity_region}")
+                            ], className="d-flex align-items-center")
+                        ], className="border-start border-purple border-4 p-3")
+                    ], className="shadow-lg h-100"),
+                    md=4
+                ),
+                
+                # Male Change Card
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H6([
+                                html.I(className="bi bi-gender-male me-2"),
+                                'Male'
+                            ], className="mb-0 text-white"),
+                            className="bg-info"
+                        ),
+                        dbc.CardBody([
+                            html.Div([
+                                html.I(className="bi bi-briefcase me-2 text-muted"),
+                                html.Span(f"Occupation: {highest_m_year_disparity_occupation}", className="text-muted")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className="bi bi-geo me-2 text-muted"),
+                                html.Span(f"Region: {highest_m_year_disparity_region}", className="text-muted")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className=f"bi {get_metric_style(float(highest_m_year_disparity_percentage))['icon']} me-2"),
+                                html.Span(f"{highest_m_year_disparity_percentage}%", 
+                                        className=f"h4 text-{get_metric_style(float(highest_m_year_disparity_percentage))['color']}")
+                            ], className="d-flex align-items-center")
+                        ], className="border-start border-info border-4 p-3")
+                    ], className="shadow-lg h-100"),
+                    md=4
+                ),
+                
+                # Female Change Card
+                dbc.Col(
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H6([
+                                html.I(className="bi bi-gender-female me-2"),
+                                'Female'
+                            ], className="mb-0 text-white"),
+                            className="bg-pink"
+                        ),
+                        dbc.CardBody([
+                            html.Div([
+                                html.I(className="bi bi-briefcase me-2 text-muted"),
+                                html.Span(f"Occupation: {highest_f_year_disparity_occupation}", className="text-muted")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className="bi bi-geo me-2 text-muted"),
+                                html.Span(f"Region: {highest_f_year_disparity_region}", className="text-muted")
+                            ], className="d-flex align-items-center mb-2"),
+                            html.Div([
+                                html.I(className=f"bi {get_metric_style(float(highest_f_year_disparity_percentage))['icon']} me-2"),
+                                html.Span(f"{highest_f_year_disparity_percentage}%", 
+                                        className=f"h4 text-{get_metric_style(float(highest_f_year_disparity_percentage))['color']}")
+                            ], className="d-flex align-items-center")
+                        ], className="border-start border-pink border-4 p-3")
+                    ], className="shadow-lg h-100"),
+                    md=4
+                )
+            ], className="g-4")
+        ], className="p-4")
+    ],
+    className="my-4 shadow-lg"
+)
 
-summary_stats = dbc.Card([
-    dcc.Tabs(id='summary-tabs', children=[
+summary_stats = dcc.Tabs(
+    children=[
         dcc.Tab(label='Gender Disparity Statistics', children=[gender_disparity_stats]),
         dcc.Tab(label='Occupation Statistics', children=[occupation_stats]),
-    ])
-], className="shadow", id="summary-stats", style={"display": "none"})
+    ],
+    className="shadow",
+    id="summary-stats",
+    style={"display": "none"}
+)
 
 data_attribution = html.Div(
     [

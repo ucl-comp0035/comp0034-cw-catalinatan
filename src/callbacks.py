@@ -112,11 +112,11 @@ def register_callbacks(app):
         """
         if not selected_region or not selected_year:
             raise PreventUpdate
-
-        df['Short Occupation Type'] = df['Occupation Type'] \
-            .str.split(':').str[0]
+        
         filtered_df = filter_dataframe(
             region=selected_region, year=selected_year)
+        filtered_df['Short Occupation Type'] = filtered_df['Occupation Type'] \
+            .str.split(':').str[0]
         return create_bar_chart(filtered_df, selected_region, selected_year)
 
     @app.callback(
@@ -282,41 +282,28 @@ def register_callbacks(app):
 
         return highest_female_employment_occupation, f"{highest_female_employment_percentage:.2f}%"
     
-    # Occupation disparity 
     @app.callback(
-        Output("highest-m-year-disparity-percentage","children"),
-        Output("highest-m-year-disparity-occupation","children"),
-        Output("highest-m-year-disparity-region","children"),
-        Output("highest-f-year-disparity-percentage","children"),
-        Output("highest-f-year-disparity-occupation","children"),
-        Output("highest-f-year-disparity-region","children"),
-        Output("highest-year-disparity-gender","children"),
-        Output("highest-year-disparity-region","children"),
-        Input("region-dropdown","value")
+        Output("highest-employment-occupation","children"),
+        Output("highest-employment-percentage","children"),
+        Input("region-dropdown","value"),
+        Input("year-dropdown","value")
     )
-    def update_highest_total_employment_occupation(selected_region, selected_year):
+
+    def update_hihgest_overall_employment_occupation(selected_region, selected_year):
         """
-        Update the highest female employment occupation based on the selected region
+        Update the highest overall employment occupation based on the selected region
         and year.
         """
         if not selected_region or not selected_year:
             raise PreventUpdate
         
         filtered_df = filter_dataframe(region=selected_region, year=selected_year)
-        prepared_df = prepare_disparity_df(filtered_df)
-        prepare_year_disparity_df = prepare_year_disparity_df(filtered_df)
+        disparity_df = prepare_disparity_df(filtered_df)
+        highest_employment_percentage = disparity_df['Total Employment'].max()
+        highest_employ_perc_idx = disparity_df['Total Employment'].idxmax()
+        highest_employment_occupation = disparity_df['Occupation Type'][highest_employ_perc_idx]
 
-        highest_total_employment_percentage = prepared_df['Total Employment'].max()
-        highest_total_employ_perc_idx = prepared_df['Total Employment'].idxmax()
-        highest_total_employment_occupation = prepared_df['Occupation Type'][highest_total_employ_perc_idx]
-
-        highest_year_disparity_percentage = prepare_year_disparity_df['Year Disparity'].max()
-        highest_year_disparity_perc_idx = prepare_year_disparity_df['Year Disparity'].idxmax()
-        highest_year_disparity_occupation = prepare_year_disparity_df['Occupation Type'][highest_year_disparity_perc_idx]
-        highest_year_disparity_gender = prepare_year_disparity_df['Gender'][highest_year_disparity_perc_idx]
-        highest_year_disparity_region = prepare_year_disparity_df['Region'][highest_year_disparity_perc_idx]
-
-        return highest_total_employment_occupation, f"{highest_total_employment_percentage:.2f}%", f"{highest_year_disparity_percentage:.2f}", highest_year_disparity_occupation, highest_year_disparity_gender, highest_year_disparity_region
+        return highest_employment_occupation, f"{highest_employment_percentage:.2f}%"
     
     @app.callback(
         Output("summary-stats", "style"),
