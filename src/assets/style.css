@@ -34,7 +34,7 @@ a:hover {
     color: #0FA0CE;
 }
 
-/* Custom App CSS Below --------------------------------- */
+/* App CSS Below --------------------------------- */
 html, body {
     height: 100%;
 }
@@ -56,4 +56,159 @@ a {
 }
 .text-padding {
     padding: 5px;
+}
+
+/* Common styles for all chart cards */
+.chart-card {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Changed from 'display' to 'hidden' */
+    display: flex;
+}
+
+/* Specific styles for top charts */
+.top-chart-card {
+    height: 500px;
+}
+
+/* Specific styles for bottom charts */
+.bottom-chart-card {
+    height: 600px;
+}
+
+.bg-custom-blue {
+    background-color: #4292C3;
+}
+
+/* Button */
+.custom-button {
+    background-color: #4292C3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button:hover {
+    background-color: #357AB7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.custom-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(66, 146, 195, 0.3);
+}
+
+/* Dropdown */
+/* Custom dropdown styles */
+.custom-dropdown {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.custom-dropdown:hover {
+    border-color: #4292C3;
+    box-shadow: 0 4px 8px rgba(66, 146, 195, 0.1);
+}
+
+.custom-dropdown:focus {
+    border-color: #4292C3;
+    box-shadow: 0 0 0 3px rgba(66, 146, 195, 0.2);
+    outline: none;
+}
+
+/* Dropdown arrow */
+.custom-dropdown::after {
+    content: '\25BC';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #4292C3;
+    pointer-events: none;
+}
+
+/* Dropdown options */
+.custom-dropdown option {
+    background-color: white;
+    color: #333;
+    padding: 10px;
+}
+
+/* Selected option */
+.custom-dropdown option:checked {
+    background-color: #f0f8ff;
+    color: #4292C3;
+}
+
+/* Tab */
+/* Tab container styles */
+/* Tab container styles */
+.tab-container {
+  background-color: #ffc107;
+  border-bottom: 3px solid #4292C3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab styles */
+.tab-container .tab {
+  color: #FFFFFF;
+  background-color: #94C7E5;
+  font-weight: bold;
+  border: none;
+  padding: 10px 15px;
+  margin-right: 2px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Selected tab styles */
+.tab-container .tab--selected {
+  background-color: #FFFFFF;
+  color: #4292C3;
+  font-weight: bold;
+}
+
+/* Hover effect for tabs */
+.tab-container .tab:hover:not(.tab--selected) {
+  background-color: #FFFFFF;
+  color: #4292C3 !important;
+  font-weight: bold;
+}
+
+/* Content area styles */
+.tab-content {
+  background-color: #FFFFFF;
+  padding: 15px;
+  border-top: none;
+}
+
+/* Custom class for the collapse component */
+.shadow {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip */
+.tooltip-inner {
+    background-color: #BFDCEC !important;  /* Set tooltip background to grey */
+    color: #2C3E50 !important;  /* Ensure text is visible */
+    font-size: 14px !important;  /* Adjust text size */
+    padding: 8px 12px !important;  /* Add some padding */
 }

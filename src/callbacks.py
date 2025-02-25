@@ -170,9 +170,10 @@ def register_callbacks(app):
         filtered_df = filter_dataframe(region=selected_region)
         disparity_df = prepare_disparity_df(filtered_df)
         return create_area_chart(disparity_df, selected_region)
+   
     @app.callback(
-        Output("selected-region", "children"),
-        Output("selected-year", "children"),
+        Output("gen-selected-region", "children"),
+        Output("gen-selected-year", "children"),
         Input("region-dropdown", "value"),
         Input("year-dropdown", "value"),
     )
@@ -187,7 +188,25 @@ def register_callbacks(app):
 
         return selected_region, selected_year
     
-   
+    @app.callback(
+        Output("occ-selected-region", "children"),
+        Output("occ-selected-year", "children"),
+        Output('selected-occupation-type', 'children'),
+        Input("region-dropdown", "value"),
+        Input("year-dropdown", "value"),
+        Input('occupation-type-slider', 'value')
+    )
+    def update_selected_filters(selected_region, selected_year, selected_occupation):
+        """
+        Update the selected region, year and occupation based on the selected
+        values.
+        """
+
+        if not selected_region or not selected_year or not selected_occupation:
+            raise PreventUpdate
+
+        return selected_region, selected_year, full_descriptions[selected_occupation]
+    
     @app.callback(
         Output("highest-disparity-region", "children"),
         Output("highest-disparity-percentage", "children"),
@@ -306,21 +325,39 @@ def register_callbacks(app):
         return highest_employment_occupation, f"{highest_employment_percentage:.2f}%"
     
     @app.callback(
-        Output("summary-stats", "style"),
+        Output("display-summary-button","hidden"),
+        Input('region-dropdown','value'),
+        Input('year-dropdown','value'),
+        Input('occupation-type-slider','value'),
+    )
+
+    def show_summary_button(selected_region, selected_year, selected_occupation):
+        """
+        Show the summary button based on the selected region, year and occupation.
+        """
+        if not selected_region or not selected_year or not selected_occupation:
+            return True
+        return False
+    
+    @app.callback(
+        Output("summary-stats", "is_open"),
         Input("display-summary-button", "n_clicks"),
+        State('summary-stats', 'is_open'),
         prevent_initial_call=True
     )
-    def toggle_summary_stats(n_clicks):
+    def toggle_summary_stats(n_clicks, is_open):
         """
         Toggle the display of summary statistics based on the button click.
         """
-        if n_clicks % 2 == 1:
-            return {"display": "block"}
-        return {"display": "none"}
+        if n_clicks:
+            return not is_open
+        return is_open
 
     @app.callback(
-        Output("data_attribution","is_open"),
-        Input("data-attribution-button","n_clicks")
+        Output("data-attribution-canvas","is_open"),
+        Input("data-attribution-button","n_clicks"),
+        State("data-attribution-canvas","is_open"),
+        prevent_initial_call=True
     )
 
     def toggle_data_attribution(n_clicks, is_open):
@@ -331,3 +368,4 @@ def register_callbacks(app):
             return not is_open
         return is_open
     
+   

@@ -68,6 +68,9 @@ def create_pie_chart(disparity_df, selected_region, selected_year):
     Returns:
     fig (Figure): The Plotly figure object for the pie chart.
     """
+    # Sort the categories alphabetically
+    sorted_categories = sorted(disparity_df['Occupation Type'].unique())
+
     fig = px.pie(
         disparity_df,  # Use disparity_df instead of filtered_df
         names='Occupation Type',
@@ -76,7 +79,8 @@ def create_pie_chart(disparity_df, selected_region, selected_year):
             f"Employment Data for {selected_region} in {selected_year} "
             "by Occupation Type"
         ),
-        color_discrete_sequence=px.colors.sequential.RdBu
+        color_discrete_sequence=px.colors.sequential.RdBu,
+        category_orders={'Occupation Type': sorted_categories}  # Sort categories alphabetically
     )
 
     fig.update_layout(
@@ -86,8 +90,16 @@ def create_pie_chart(disparity_df, selected_region, selected_year):
             xanchor='center',
             yanchor='top'
         ),
-        margin=dict(l=50, r=200, t=50, b=50),  # Increase right margin
-        font=dict(color='#000000')
+        margin=dict(l=50, r=50, t=50, b=50),  # Adjust margins as needed
+        font=dict(color='#000000'),
+        legend=dict(
+            title="Occupation Type",
+            orientation="v",  # Vertical orientation
+            yanchor="middle",
+            y=0.5,
+            xanchor="left",
+            x=1.05  # Position legend to the right of the chart
+        )
     )
     return fig
 
@@ -160,7 +172,15 @@ def create_disparity_map(disparity_df, selected_year):
             xanchor='center',
             yanchor='top'
         ),
-        font=dict(color='#000000')
+        font=dict(color='#000000'),
+        legend=dict(
+            title="Region",
+            orientation="v",  # Vertical orientation
+            yanchor="middle",
+            y=0.5, 
+            xanchor="left",
+            x=1.00
+        )
     )
     return fig
 
@@ -192,8 +212,14 @@ def create_area_chart(disparity_df, selected_region):
     fig.update_layout(
         xaxis_title="Year",
         yaxis_title="Percentage Employed",
-        legend_title="Occupation Type",
         title_x=0.5,
+        legend=dict(
+            title="Occupation Type",
+            orientation="v",  # Vertical orientation
+            yanchor="middle",
+            y=0.5, 
+            xanchor="left",
+            x=1.1),
         font=dict(color='#000000')
     )
 
