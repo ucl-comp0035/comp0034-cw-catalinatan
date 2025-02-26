@@ -54,7 +54,8 @@ full_descriptions = {
 # Occupation type slider
 occupation_type_slider = html.Div([
     html.Div([
-        dbc.Label("Select a occupation type"),
+        dbc.Label("Occupation Types", id='occupation-type-label'),
+        dbc.Tooltip("Slide to select an occupation type", target='occupation-type-label', placement='top')
     ], style={
         'display': 'flex',
         'justifyContent': 'center',
@@ -77,7 +78,7 @@ occupation_type_slider = html.Div([
 ], style={'display': 'flex', 'flexDirection': 'column'})
 
 # Clear button
-clear_button = html.Button('Clear selections', className="custom-button", id='clear-button', n_clicks=0)
+clear_button = html.Button('Clear', className="custom-button", id='clear-button', n_clicks=0)
 clear_button_tooltip = dbc.Tooltip(
         "Clear all filters",  # Tooltip text
         target="clear-button",  # Connects to the button ID
@@ -86,13 +87,23 @@ clear_button_tooltip = dbc.Tooltip(
         )
 
 # Save filters button 
-save_filters_button = html.Button('Save filters', className="custom-button", id='save-filters-button', n_clicks=0)
+save_filters_button = html.Button('Save', className="custom-button", id='save-filters-button', n_clicks=0)
 save_filters_tooltip = dbc.Tooltip(
         "Save the current filters",  # Tooltip text
         target="save-filters-button",  # Connects to the button ID
         placement="bottom",  # Adjust as needed (top, bottom, left, right)
         className="custom-tooltip"  # Custom CSS class for styling
         )
+save_filters_alert_message = dbc.Alert(
+    id="save-alert",
+    color="danger",
+    dismissable=True,
+    is_open=False,
+)
+
+analysis_name_input = dbc.InputGroup(
+    [dbc.InputGroupText("Save analysis as"), dbc.Input(placeholder="Enter name", id="analysis-name-input")],
+    className="custom-input-group")
 
 # Display summary statistics button
 display_summary_button = html.Button('Summary Statistics', className="custom-button", id='display-summary-button', n_clicks=0, style={"width":"100%"})
@@ -119,7 +130,7 @@ gender_disparity_stats = dbc.Card(
                 html.I(className="bi bi-gender-male me-2"),
                 "Gender Disparity Analysis"
             ], className="text-center text-white"),
-            className="bg-custom-blue border-bottom border-3 border-warning"
+            className="custom-stats-border"
         ),
         dbc.CardBody([
             dbc.Row([
@@ -161,7 +172,7 @@ gender_disparity_stats = dbc.Card(
                                 html.Span("Disparity:", className="text-muted"),
                                 html.Span(id='highest-disparity-occupation-percentage', className="h2 ms-2")
                             ], className="d-flex align-items-center")
-                        ], className="border-start border-info border-4 p-3")
+                        ], className="custom-male-border")
                     ], className="shadow-lg h-100"),
                     md=6
                 )
@@ -181,7 +192,7 @@ occupation_stats = dbc.Card(
                 ],
                 className="text-center text-white"
             ),
-            className="bg-success border-bottom border-3 border-warning"
+            className="custom-stats-border"
         ),
         dbc.CardBody([
             # Employment Change Section
@@ -190,8 +201,8 @@ occupation_stats = dbc.Card(
                     html.I(className="bi bi-activity me-2"),
                     "Greatest % Change in Employment (2021-2023)"
                 ],
-                className="mb-4 text-primary border-bottom pb-2"
-            ),
+                className="custom-header-style"
+            ), 
             dbc.Row([
                 # Overall Change Card
                 dbc.Col(
@@ -201,7 +212,7 @@ occupation_stats = dbc.Card(
                                 html.I(className="bi bi-globe me-2"),
                                 'Overall'
                             ], className="mb-0 text-white"),
-                            className="bg-purple"
+                            className="bg-warning"
                         ),
                         dbc.CardBody([
                             html.Div([
@@ -234,7 +245,7 @@ occupation_stats = dbc.Card(
                                 html.I(className="bi bi-gender-male me-2"),
                                 'Male'
                             ], className="mb-0 text-white"),
-                            className="bg-info"
+                            style={"backgroundColor": "#4291C3"}
                         ),
                         dbc.CardBody([
                             html.Div([
@@ -250,7 +261,7 @@ occupation_stats = dbc.Card(
                                 html.Span(f"{highest_m_year_disparity_percentage}%", 
                                         className=f"h4 text-{get_metric_style(float(highest_m_year_disparity_percentage))['color']}")
                             ], className="d-flex align-items-center")
-                        ], className="border-start border-info border-4 p-3")
+                        ], className="custom-male-border")
                     ], className="shadow-lg h-100", style={"marginBottom": "15px"}),
                     md=4
                 ),
@@ -263,7 +274,7 @@ occupation_stats = dbc.Card(
                                 html.I(className="bi bi-gender-female me-2"),
                                 'Female'
                             ], className="mb-0 text-white"),
-                            className="bg-pink"
+                            style={"backgroundColor": "#D6604D"}
                         ),
                         dbc.CardBody([
                             html.Div([
@@ -279,7 +290,7 @@ occupation_stats = dbc.Card(
                                 html.Span(f"{highest_f_year_disparity_percentage}%", 
                                         className=f"h4 text-{get_metric_style(float(highest_f_year_disparity_percentage))['color']}")
                             ], className="d-flex align-items-center")
-                        ], className="border-start border-pink border-4 p-3")
+                        ], className="custom-female-border")
                     ], className="shadow-lg h-100"),
                     md=4
                 )
@@ -293,7 +304,7 @@ occupation_stats = dbc.Card(
                     " in ",
                     html.Span(id='occ-selected-year', className="fw-bold")])
                 ],
-                className="h4 mb-4 text-muted d-flex align-items-center justify-content-center"
+                className="custom-location-header-style"
             ),
             
             # Highest Employment Section
@@ -302,7 +313,7 @@ occupation_stats = dbc.Card(
                     html.I(className="bi bi-trophy me-2"),
                     "Highest Employment Percentage (%)"
                 ],
-                className="mb-4 text-primary"
+                className="custom-header-style"
             ),
             dbc.Row([
                 dbc.Col(
@@ -346,7 +357,7 @@ occupation_stats = dbc.Card(
                                 ],
                                 className="mb-0 text-white"
                             ),
-                            className="bg-info"
+                            style={"backgroundColor": "#4291C3"}
                         ),
                         dbc.CardBody([
                             html.P(
@@ -358,12 +369,12 @@ occupation_stats = dbc.Card(
                             ),
                             html.Div(
                                 [
-                                    html.I(className="bi bi-arrow-up-short text-success"),
+                                    html.I(className="bi bi-percent text-success"),
                                     html.Span(id='highest-male-employment-percentage', className="h4 text-success ms-2")
                                 ],
                                 className="d-flex align-items-center"
                             )
-                        ], className="border-start border-info border-4")
+                        ], className="custom-male-border")
                     ], className="shadow-sm h-100"),
                     md=4
                 ),
@@ -377,7 +388,7 @@ occupation_stats = dbc.Card(
                                 ],
                                 className="mb-0 text-white"
                             ),
-                            className="bg-pink"
+                            style={"backgroundColor": "#D6604D"},
                         ),
                         dbc.CardBody([
                             html.P(
@@ -389,12 +400,12 @@ occupation_stats = dbc.Card(
                             ),
                             html.Div(
                                 [
-                                    html.I(className="bi bi-arrow-up-short text-success"),
+                                    html.I(className="bi bi-percent text-success"),
                                     html.Span(id='highest-female-employment-percentage', className="h4 text-success ms-2")
                                 ],
                                 className="d-flex align-items-center"
                             )
-                        ], className="border-start border-pink border-4")
+                        ], className="custom-female-border")
                     ], className="shadow-sm h-100"),
                     md=4
                 )
@@ -419,7 +430,8 @@ summary_stats = html.Div([
         ),
         id="summary-stats",
         is_open=False
-    )
+    ),
+    dcc.Download(id="export-stats")
 ], className="shadow tab-content")
 
 data_attribution = html.Div(
@@ -432,10 +444,18 @@ data_attribution = html.Div(
             className="custom-tooltip"  # Custom CSS class for styling
         ),
         dbc.Offcanvas(
-            html.P(
-                "The data used in this analysis is sourced from the Greater London Authority, under the Open Government Licence v2.0."
-            ),
-
+            children=[
+                html.Div([
+                    html.P(
+                        "The data used in this analysis is sourced from the Greater London Authority, under the Open Government Licence v2.0."
+                    ),
+                    html.P([
+                        "Please refer to ",
+                        html.A("this website", href="https://data.london.gov.uk/dataset/employment-occupation-type-and-gender-borough", target="_blank"),
+                        " for more information."
+                    ]),
+                ]),
+            ],
             id="data-attribution-canvas",
             scrollable=True,
             title="Dataset Attribution",

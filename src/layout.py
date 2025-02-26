@@ -8,6 +8,8 @@ from components import (
     clear_button_tooltip,
     save_filters_button, 
     save_filters_tooltip,
+    save_filters_alert_message,
+    analysis_name_input,
     data_attribution,
     summary_stats # Import summary_stats
 )
@@ -31,34 +33,51 @@ app_layout = dbc.Container([
     ),
 
     dbc.Row([
-        dbc.Col(data_attribution, width=1),
-        dbc.Col(region_dropdown, width=3),
-        dbc.Col(year_dropdown, width=3),
-        dbc.Col([save_filters_button, save_filters_tooltip]),
-        dbc.Col([clear_button, clear_button_tooltip])
-    ]),
+        dbc.Col(data_attribution, width="1", className="ms-2"),
+        dbc.Col([
+            dbc.Row([
+                dbc.Col(region_dropdown, width="3"),
+                dbc.Col(year_dropdown, width="3"),
+                dbc.Col(analysis_name_input, width="4"),
+                dbc.Col(dbc.ButtonGroup([save_filters_button, save_filters_tooltip, save_filters_alert_message]), width="auto")
+            ], justify="center", align="items-center", className="g-2")
+        ], width={"size": "8", "offset": 0.5}),
+        dbc.Col(dbc.ButtonGroup([clear_button, clear_button_tooltip]), width="auto", className="me-2")
+    ], justify="between", align="items-center", className="g-0"),
+
 
     dbc.Row([
         dbc.Col(
-            dbc.Card(dcc.Graph(id='stacked-bar-chart'), body=True, className="chart-card top-chart-card"),
+            dbc.Card(
+                dbc.CardBody(dcc.Loading(id='bar-chart-card-content')),
+                className="chart-card top-chart-card",
+            ),
             width=6,
         ),
         dbc.Col(
-            dbc.Card(dcc.Graph(id='pie-chart'), body=True, className="chart-card top-chart-card"), 
-            width=6
+            dbc.Card(
+                dbc.CardBody(dcc.Loading(id='pie-chart-card-content')), 
+                className="chart-card top-chart-card"
+            ),
+            width=6,
         )
     ]),
 
     dbc.Row([
         dbc.Col(
             dbc.Card([
-                dcc.Graph(id='disparity-map'),
-                occupation_type_slider
-            ], className="chart-card bottom-chart-card", body=True),
+                dbc.CardBody([
+                    dcc.Loading(id='disparity-map-card-content'),
+                    occupation_type_slider
+                ])
+            ], className="chart-card bottom-chart-card"),
             width=6,
         ),
         dbc.Col(
-            dbc.Card(dcc.Graph(id='stacked-area-chart'), body=True, className="chart-card bottom-chart-card"),
+            dbc.Card(
+                dbc.CardBody(dcc.Loading(id='stacked-area-chart-card-content')),
+                className="chart-card bottom-chart-card"
+            ),
             width=6,
         )
     ]),

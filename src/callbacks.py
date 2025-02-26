@@ -1,4 +1,4 @@
-from dash import Output, Input, State, callback_context
+from dash import Output, Input, State, callback_context, html, dcc, no_update
 from dash.dependencies import ALL, MATCH  # Add MATCH import
 from dash.exceptions import PreventUpdate
 from components import full_descriptions, df
@@ -19,53 +19,73 @@ def register_callbacks(app):
     @app.callback(
         Output("saved-analyses-menu", "children"),
         Output("saved-analyses-store", "data"),
+        Output("save-alert", "is_open"),
+        Output("save-alert", "children"),
         Input("save-filters-button", "n_clicks"),
+        State("analysis-name-input", "value"),
         State("region-dropdown", "value"),
         State("year-dropdown", "value"),
         State("occupation-type-slider", "value"),
         State("saved-analyses-store", "data"),
         State("saved-analyses-menu", "children"),
-        prevent_initial_call=True,
+        prevent_initial_call=True
     )
-    def save_filters(n_clicks, region, year, occupation, current_data, current_menu_items):
+    def save_filters(n_clicks, custom_analysis_name, region, year, occupation, current_data, current_menu_items):
         if not n_clicks:
             raise PreventUpdate
 
+        if not region or not year:
+            return no_update, no_update, True, "Please select a region and year before saving an analysis."
+
+        # Ensure the input has a valid name
+        analysis_name = custom_analysis_name.strip() if custom_analysis_name else f"Analysis {len(current_data) + 1}: {region}, {year}"
+
+        # Check if the analysis name already exists
+        if any(analysis["name"] == analysis_name for analysis in current_data):
+            return no_update, no_update, True, f"An analysis named '{analysis_name}' already exists. Please choose a different name."
+
+        # Append new analysis
         new_analysis = {
+            "name": analysis_name,
             "region": region,
             "year": year,
             "occupation": occupation
         }
 
-        updated_data = current_data + [new_analysis]
+        updated_data = current_data + [new_analysis] if current_data else [new_analysis]
+
         new_menu_item = dbc.DropdownMenuItem(
-            f"Analysis {len(updated_data)}: {region}, {year}",
-            id={"type": "saved-analysis", "index": len(updated_data)},
+            analysis_name,
+            id={"type": "saved-analysis", "index": len(updated_data) - 1},
             n_clicks=0
         )
 
-        return current_menu_items + [new_menu_item], updated_data
+        updated_menu_items = current_menu_items + [new_menu_item] if current_menu_items else [new_menu_item]
+
+        return updated_menu_items, updated_data, False, no_update
 
     @app.callback(
         [
             Output("region-dropdown", "value"),
             Output("year-dropdown", "value"),
-            Output("occupation-type-slider", "value")
+            Output("occupation-type-slider", "value"),
+            Output("summary-stats", "is_open")
         ],
         [
             Input({"type": "saved-analysis", "index": ALL}, "n_clicks"),
-            Input('clear-button', 'n_clicks')
+            Input('clear-button', 'n_clicks'),
+            Input('display-summary-button', 'n_clicks')
         ],
         [
             State("saved-analyses-store", "data"),
             State('region-dropdown', 'value'),
             State('year-dropdown', 'value'),
-            State('occupation-type-slider', 'value')
+            State('occupation-type-slider', 'value'),
+            State('summary-stats', 'is_open')
         ],
         prevent_initial_call=True,
     )
-
-    def manage_dropdowns(saved_n_clicks, clear_n_clicks, data, region_value, year_value, occupation_value):
+    def manage_dropdowns(saved_n_clicks, clear_n_clicks, summary_n_clicks, data, region_value, year_value, occupation_value, summary_status):
         ctx = callback_context
         if not ctx.triggered:
             raise PreventUpdate
@@ -73,19 +93,22 @@ def register_callbacks(app):
         triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
         if triggered_id == 'clear-button':
-            return None, None, 1
+            return None, None, 1, False
+
+        if triggered_id == 'display-summary-button':
+            return region_value, year_value, occupation_value, not summary_status
 
         try:
             triggered_id = json.loads(triggered_id)
             if triggered_id.get("type") == "saved-analysis":
-                analysis_index = triggered_id["index"] - 1
+                analysis_index = triggered_id["index"]
                 if 0 <= analysis_index < len(data):
                     analysis_data = data[analysis_index]
-                    return analysis_data["region"], analysis_data["year"], analysis_data["occupation"]
+                    return analysis_data["region"], analysis_data["year"], analysis_data["occupation"], summary_status
         except json.JSONDecodeError:
             pass
 
-        return region_value, year_value, occupation_value
+        return region_value, year_value, occupation_value, summary_status
 
     @app.callback(
         Output('occupation-type-slider', 'tooltip'),
@@ -102,7 +125,7 @@ def register_callbacks(app):
         }
 
     @app.callback(
-        Output('stacked-bar-chart', 'figure'),
+        Output('bar-chart-card-content', 'children'),
         Input('region-dropdown', 'value'),
         Input('year-dropdown', 'value'),
     )
@@ -111,16 +134,23 @@ def register_callbacks(app):
         Update the stacked bar chart based on the selected region and year.
         """
         if not selected_region or not selected_year:
-            raise PreventUpdate
-        
-        filtered_df = filter_dataframe(
-            region=selected_region, year=selected_year)
-        filtered_df['Short Occupation Type'] = filtered_df['Occupation Type'] \
-            .str.split(':').str[0]
-        return create_bar_chart(filtered_df, selected_region, selected_year)
+        # Return a figure with only the placeholder image
+            return html.Div([
+                html.I(className="custom-icon bi bi-lock"),
+                html.Img(src=app.get_asset_url('stacked_bar_chart.png'), className='custom-placeholder')
+                ])
+        else: 
+            filtered_df = filter_dataframe(
+                region=selected_region, year=selected_year)
+            filtered_df['Short Occupation Type'] = filtered_df['Occupation Type'] \
+                .str.split(':').str[0]
+            # Call your function to create the bar chart
+            bar_chart_figure = create_bar_chart(filtered_df, selected_region, selected_year)
+
+            return dcc.Graph(figure=bar_chart_figure)
 
     @app.callback(
-        Output('pie-chart', 'figure'),
+        Output('pie-chart-card-content', 'children'),
         Input('region-dropdown', 'value'),
         Input('year-dropdown', 'value'),
     )
@@ -129,15 +159,19 @@ def register_callbacks(app):
         Update the pie chart based on the selected region and year.
         """
         if not selected_region or not selected_year:
-            raise PreventUpdate
-
-        filtered_df = filter_dataframe(
-            region=selected_region, year=selected_year)
-        disparity_df = prepare_disparity_df(filtered_df)
-        return create_pie_chart(disparity_df, selected_region, selected_year)
+            return html.Div([
+                html.I(className="custom-icon bi bi-lock"),
+                html.Img(src=app.get_asset_url('pie_chart_placeholder.png'), className='custom-placeholder')
+                ])
+        else:
+            filtered_df = filter_dataframe(
+                region=selected_region, year=selected_year)
+            disparity_df = prepare_disparity_df(filtered_df)
+            pie_chart_figure = create_pie_chart(disparity_df, selected_region, selected_year)
+            return dcc.Graph(figure=pie_chart_figure)
 
     @app.callback(
-        Output("disparity-map", "figure"),
+        Output("disparity-map-card-content", "children"),
         Input("year-dropdown", "value"),
         Input("occupation-type-slider", "value"),
     )
@@ -146,18 +180,23 @@ def register_callbacks(app):
         Update the disparity map based on the selected year and occupation
         type.
         """
-        if not selected_year or not selected_occupation:
-            raise PreventUpdate
-
-        occupation_prefix = f"{selected_occupation}:"
-        filtered_df = filter_dataframe(
-            year=selected_year, occupation_prefix=occupation_prefix
-        )
-        disparity_df = prepare_disparity_df(filtered_df)
-        return create_disparity_map(disparity_df, selected_year)
+        if not selected_year or not selected_year:
+            return html.Div([
+                html.I(className="custom-icon bi bi-lock"),
+                html.Img(src=app.get_asset_url('disparity_map_placeholder.png'), className='custom-placeholder')
+                ])
+        
+        else:
+            occupation_prefix = f"{selected_occupation}:"
+            filtered_df = filter_dataframe(
+                year=selected_year, occupation_prefix=occupation_prefix
+            )
+            disparity_df = prepare_disparity_df(filtered_df)
+            disparity_map_figure = create_disparity_map(disparity_df, selected_year)
+            return dcc.Graph(figure=disparity_map_figure)
 
     @app.callback(
-        Output("stacked-area-chart", 'figure'),
+        Output("stacked-area-chart-card-content", 'children'),
         Input("region-dropdown", 'value'),
     )
     def update_area_chart(selected_region):
@@ -165,11 +204,16 @@ def register_callbacks(app):
         Update the stacked area chart based on the selected region.
         """
         if not selected_region:
-            raise PreventUpdate
-
-        filtered_df = filter_dataframe(region=selected_region)
-        disparity_df = prepare_disparity_df(filtered_df)
-        return create_area_chart(disparity_df, selected_region)
+            return html.Div([
+                html.I(className="custom-icon bi bi-lock"),
+                html.Img(src=app.get_asset_url('stacked_area_chart_placeholder.png'), className='custom-placeholder')
+                ])
+        
+        else:
+            filtered_df = filter_dataframe(region=selected_region)
+            disparity_df = prepare_disparity_df(filtered_df)
+            area_chart_figure = create_area_chart(disparity_df, selected_region)
+            return dcc.Graph(figure=area_chart_figure)
    
     @app.callback(
         Output("gen-selected-region", "children"),
@@ -338,20 +382,6 @@ def register_callbacks(app):
         if not selected_region or not selected_year or not selected_occupation:
             return True
         return False
-    
-    @app.callback(
-        Output("summary-stats", "is_open"),
-        Input("display-summary-button", "n_clicks"),
-        State('summary-stats', 'is_open'),
-        prevent_initial_call=True
-    )
-    def toggle_summary_stats(n_clicks, is_open):
-        """
-        Toggle the display of summary statistics based on the button click.
-        """
-        if n_clicks:
-            return not is_open
-        return is_open
 
     @app.callback(
         Output("data-attribution-canvas","is_open"),
@@ -368,4 +398,3 @@ def register_callbacks(app):
             return not is_open
         return is_open
     
-   
