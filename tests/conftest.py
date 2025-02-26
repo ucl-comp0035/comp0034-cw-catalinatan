@@ -1,6 +1,7 @@
 import os
 import pytest
 from selenium.webdriver.chrome.options import Options
+from dash.testing.application_runners import import_app
 
 @pytest.fixture
 def chrome_options():
@@ -13,3 +14,20 @@ def chrome_options():
     else:
         options.add_argument("start-maximized")
     return options
+
+@pytest.fixture(autouse=True)
+def start_app(dash_duo):
+    """ Pytest fixture to start the Dash app in a threaded server.
+    This is a function-scoped fixture.
+    Automatically used by all tests in this module.
+    """
+    app_file_loc = "app"
+    app = import_app(app_file_loc)
+    yield dash_duo.start_server(app)
+
+
+@pytest.fixture()
+def app_url(start_app, dash_duo):
+    """ Pytest fixture for the URL of the running Dash app. """
+    yield dash_duo.server_url
+

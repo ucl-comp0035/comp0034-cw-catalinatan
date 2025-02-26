@@ -22,3 +22,6 @@ addopts = "-rA -v"
 testpaths = ["tests"]
 pythonpath = ["src"]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.setuptools.packages.find]
+where = ["src", "tests"]
