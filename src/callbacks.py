@@ -17,6 +17,18 @@ def register_callbacks(app):
     Register all callbacks for the Dash app.
     """
     @app.callback(
+        Output("analysis-name-input", "value"),
+        Input("save-filters-button","n_clicks"),
+    )
+    def clear_analysis_name(n_clicks):
+        """
+        Clear the analysis name input field when the save button is clicked.
+        """
+        if n_clicks:
+            return ""
+        return no_update
+    
+    @app.callback(
         Output("saved-analyses-menu", "children"),
         Output("saved-analyses-store", "data"),
         Output("save-alert", "is_open"),
