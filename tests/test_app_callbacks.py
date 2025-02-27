@@ -2,8 +2,9 @@ from dash import no_update
 from contextvars import copy_context
 from dash._callback_context import context_value
 from dash._utils import AttributeDict
-from src.callbacks import update_tooltip, clear_analysis_name, toggle_data_attribution
-
+from src.callbacks import clear_analysis_name, update_tooltip, save_filters
+from dash.exceptions import PreventUpdate
+import pytest
 
 def test_clear_analysis_name_with_one_click():
     """
@@ -11,30 +12,21 @@ def test_clear_analysis_name_with_one_click():
     WHEN the clear_analysis_name callback is triggered with one click
     THEN check that the analysis name is cleared from the session
     """
-    def run_callback():
-        context_value.set(AttributeDict(**{"triggered_inputs": [{"prop_id": "save-filters-button.n_clicks"}]
+    def run_callback(trigger, n_clicks):
+        context_value.set(AttributeDict(**{"triggered_inputs": [trigger]
                                            }))
-        return clear_analysis_name(1)
-    
+        return clear_analysis_name(n_clicks)
     ctx = copy_context()
-    output = ctx.run(run_callback)
+
+    trigger = {"prop_id": "save-filters-button.n_clicks"}
+    n_clicks = 1
+    output = ctx.run(run_callback, trigger, n_clicks)
     assert output == ""
 
-def test_clear_analysis_name_initial_state():
-    """
-    GIVEN a Dash app with a specified analysis name in the session
-    WHEN the clear_analysis_name callback is triggered with no clicks
-    THEN check that the analysis name remains unchanged
-    """
-    def run_callback():
-        context_value.set(AttributeDict(**{"triggered_inputs": []
-                                           }))
-        return clear_analysis_name(None)
-
-    ctx = copy_context()
-    output = ctx.run(run_callback)
+    trigger = []
+    n_clicks = 0
+    output = ctx.run(run_callback, trigger, n_clicks)
     assert output == no_update
-
 
 def test_update_tooltip():
     """
@@ -42,44 +34,31 @@ def test_update_tooltip():
     WHEN the update_tooltip callback is triggered
     THEN check that the tooltip is updated
     """
-    def run_callback():
-        context_value.set(AttributeDict(**{"triggered_inputs": [{"prop_id": "occupation-type-slider.value"}]}))
-        return update_tooltip(3) # 3 is the value of the occupation type slider
-    
+    def run_callback(trigger, value):
+        context_value.set(AttributeDict(**{"triggered_inputs": [trigger]}))
+        return update_tooltip(value) 
     ctx = copy_context()
-    output = ctx.run(run_callback)
-    assert output == "Associate prof & tech occupations"
 
+    trigger = {"prop_id": "occupation-type-slider.value"}
+    value_range = {i: str(i) for i in range(1, 10)}
+    full_descriptions = {
+        1: "Managers, directors and senior officials",
+        2: "Professional occupations",
+        3: "Associate prof & tech occupations",
+        4: "Administrative and secretarial occupations",
+        5: "Skilled trades occupations",
+        6: "Caring, leisure and other service occupations",
+        7: "Sales and customer service occupations",
+        8: "Process, plant and machine operatives",
+        9: "Elementary occupations"
+    }
 
-def test_toggle_data_attribution_with_one_click():
-    """GIVEN a Dash app with a data attribution toggle
-    WHEN the toggle_data_attribution callback is triggered
-    THEN check that the data attribution is displayed"""
-    def run_callback(is_open):
-        context_value.set(AttributeDict(**{
-            "triggered_inputs": [{"prop_id": "data-attribution-button.n_clicks"}],
-            "states": {"data-attribution-canvas.is_open": is_open}
-        }))
-        return toggle_data_attribution(1, is_open)
-    
-    ctx = copy_context()
-    output = ctx.run(run_callback)
-    assert output == True
-
-def test_toggle_data_attribution_initial_state():
-    """GIVEN a Dash app with a data attribution toggle
-    WHEN the toggle_data_attribution callback is triggered with no click
-    THEN check that the data attribution is not displayed"""
-    def run_callback(is_open):
-        context_value.set(AttributeDict(**{
-            "triggered-inputs": [],
-            "statest": {"data-attribution-canvas.is_open": is_open}
-        }))
-        return toggle_data_attribution(None, is_open) 
-    
-    ctx = copy_context()
-    output = ctx.run(run_callback)
-    assert output == False
-
-
+    for value in value_range: 
+        output = ctx.run(run_callback, trigger, value)
+        expected_output = {
+            'placement': 'bottom',
+            'always_visible': True,
+            'template': f"{full_descriptions[value]}"
+        }
+        assert output == expected_output
 

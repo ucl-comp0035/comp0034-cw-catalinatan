@@ -2,7 +2,7 @@ import requests
 from dash.testing.application_runners import import_app
 
 
-def test_server_live(dash_duo, start_app):
+def test_server_live(dash_duo):
     """
     GIVEN the app is running
     WHEN an HTTP request to the home page is made
@@ -10,7 +10,8 @@ def test_server_live(dash_duo, start_app):
     """
 
     # Start the app in a server
-    start_app(dash_duo)
+    app = import_app(app_file="app")
+    dash_duo.start_server(app)
 
     # Delay to wait 2 seconds for the page to load
     dash_duo.driver.implicitly_wait(2)

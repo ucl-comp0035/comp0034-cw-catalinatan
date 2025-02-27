@@ -106,7 +106,7 @@ analysis_name_input = dbc.InputGroup(
     className="custom-input-group")
 
 # Display summary statistics button
-display_summary_button = html.Button('Summary Statistics', className="custom-button", id='display-summary-button', n_clicks=0, style={"width":"100%"})
+display_summary_button = html.Button('Summary Statistics', className="custom-button", id='display-summary-button', n_clicks=0, style={"display": "none", "width": "100%"})
 display_summary_tooltip = dbc.Tooltip(
         "Summarise gender and occupation statistics",  # Tooltip text
         target="display-summary-button",  # Connects to the button ID
@@ -439,9 +439,10 @@ data_attribution = html.Div(
         dbc.Button("Dataset", id="data-attribution-button", className="custom-button", n_clicks=0),
         dbc.Tooltip(
             "View dataset attribution",  # Tooltip text
+            id="dataset-tooltip",
             target="data-attribution-button",  # Connects to the button ID
             placement="bottom",  # Adjust as needed (top, bottom, left, right)
-            className="custom-tooltip"  # Custom CSS class for styling
+            className="custom-tooltip"  # Custom CSS class for styling,
         ),
         dbc.Offcanvas(
             children=[

@@ -2,6 +2,12 @@ import os
 import pytest
 from selenium.webdriver.chrome.options import Options
 from dash.testing.application_runners import import_app
+import src.app as app
+from dash import no_update
+from dash.exceptions import PreventUpdate
+from contextvars import copy_context
+from dash._callback_context import context_value
+from dash._utils import AttributeDict
 
 @pytest.fixture
 def chrome_options():
@@ -31,3 +37,7 @@ def app_url(start_app, dash_duo):
     """ Pytest fixture for the URL of the running Dash app. """
     yield dash_duo.server_url
 
+
+@pytest.fixture()
+def dash_app():
+    return app
