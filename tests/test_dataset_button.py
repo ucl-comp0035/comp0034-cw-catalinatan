@@ -4,39 +4,33 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 import pytest
 
-def wait_for_element(driver, locator, timeout=10):
-    return WebDriverWait(driver, timeout).until(
-        EC.visibility_of_element_located(locator)
-    )
 
-def test_dataset_button_and_offcanvas(dash_duo):
+def test_dataset_button_and_offcanvas(start_dash_app, dash_driver, wait_for_visible_element):
     """
     GIVEN the app is running
     WHEN the user hovers over and clicks the Dataset button
     THEN the tooltip should appear and the offcanvas should open
     """
-    # Start the app in a server
-    app = import_app(app_file="app")
-    dash_duo.start_server(app)
 
     # Wait for and verify Dataset button
-    data_attr_button = wait_for_element(dash_duo.driver, (By.ID, "data-attribution-button"))
+    data_attr_button = wait_for_visible_element(dash_driver, (By.ID, "data-attribution-button"))
     assert data_attr_button.text == "Dataset"
 
     # Hover over button and verify tooltip
-    ActionChains(dash_duo.driver).move_to_element(data_attr_button).perform()
-    dataset_tooltip = wait_for_element(dash_duo.driver, (By.ID, "dataset-tooltip"))
+    ActionChains(dash_driver).move_to_element(data_attr_button).perform()
+    dataset_tooltip = wait_for_visible_element(dash_driver, (By.ID, "dataset-tooltip"))
     assert dataset_tooltip.text == "View dataset attribution"
 
     # Open and verify offcanvas
     data_attr_button.click()
-    data_attribution_canvas = wait_for_element(dash_duo.driver, (By.ID, "data-attribution-canvas"))
+    data_attribution_canvas = wait_for_visible_element(dash_driver, (By.ID, "data-attribution-canvas"))
     assert data_attribution_canvas.is_displayed()
 
     # Verify offcanvas title
-    offcanvas_title = wait_for_element(dash_duo.driver, (By.CLASS_NAME, "offcanvas-title"))
+    offcanvas_title = wait_for_visible_element(dash_driver, (By.CLASS_NAME, "offcanvas-title"))
     assert offcanvas_title.text == "Dataset Attribution"
 
     # Verify offcanvas content
@@ -50,9 +44,9 @@ def test_dataset_button_and_offcanvas(dash_duo):
     assert link.get_attribute("target") == "_blank"
 
     # Close and verify offcanvas is closed
-    ActionChains(dash_duo.driver).send_keys(Keys.ESCAPE).perform()
+    ActionChains(dash_driver).send_keys(Keys.ESCAPE).perform()
     try:
-        WebDriverWait(dash_duo.driver, 10).until(
+        WebDriverWait(dash_driver, 10).until(
             EC.invisibility_of_element_located((By.ID, "data-attribution-canvas"))
         )
     except TimeoutException:
