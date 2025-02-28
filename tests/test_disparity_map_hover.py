@@ -47,63 +47,35 @@ def test_disparity_map_hover(start_dash_app,
         .pause(4)\
         .perform()
 
-    # --- 2. Hover Logic ---
-    def attempt_hover_and_verify():
-        """
-        Attempt to hover over the disparity map and verify the tooltip.
+    # Hover over the disparity map and verify the tooltip.
+    try:
+        # Wait for the disparity map SVG element to be present
+        wait = WebDriverWait(dash_driver, 5)
+        disparity_map_svg = wait.until(EC.presence_of_element_located(
+            (By.CSS_SELECTOR, "#disparity-map svg")))
 
-        Returns
-        -------
-        bool
-            True if hover and verification are successful, False otherwise.
-        """
-        try:
-            # Wait for the disparity map SVG element to be present
-            wait = WebDriverWait(dash_driver, 20)
-            disparity_map_svg = wait.until(EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "#disparity-map svg")))
+        # Get the size of the disparity map
+        map_size = disparity_map_svg.size
 
-            # Get the location and size of the disparity map
-            map_location = disparity_map_svg.location
-            map_size = disparity_map_svg.size
+        # Calculate the coordinates to hover over (England region)
+        england_x = map_size['width'] * 0.4
+        england_y = map_size['height'] * 0.6
 
-            # Calculate the coordinates to hover over (England region)
-            england_x = map_size['width'] * 0.4
-            england_y = map_size['height'] * 0.6
+        # Move actions to the element, and move by offset inside
+        actions = ActionChains(dash_driver)
+        actions.move_to_element_with_offset(disparity_map_svg,
+                                            england_x,
+                                            england_y)
+        actions.pause(1)
+        actions.perform()
 
-            # Debugging: Print the values of england_x, england_y, map_size
-            # and map_location
-            print(f"england_x = {england_x}, england_y = {england_y}")
-            print(f"map_size = {map_size}, map_location = {map_location}")
+        # Wait for hovertext to appear
+        hover_data = wait.until(EC.visibility_of_element_located(
+            (By.CLASS_NAME, "hovertext")))
 
-            # Move actions to the element, and move by offset inside
-            actions = ActionChains(dash_driver)
-            actions.move_to_element_with_offset(disparity_map_svg,
-                                                england_x,
-                                                england_y)
-            actions.pause(1)  # Short pause might help
-            actions.perform()
-
-            # Wait for hovertext to appear
-            hover_data = wait.until(EC.visibility_of_element_located(
-                (By.CLASS_NAME, "hovertext")))
-
-            # Verify the hovertext content
-            assert "England" in hover_data.text
-            assert "Disparity" in hover_data.text
-            print("Successfully hovered and verified.")
-            return True
-        except (StaleElementReferenceException, TimeoutException,
-                NoSuchElementException, AssertionError) as e:
-            print(f"Hover or Verification Failed: {e}")
-            return False
-
-    # --- 3. Retry Mechanism ---
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        print(f"Attempt {attempt + 1} to hover and verify...")
-        if attempt_hover_and_verify():
-            print("Hover and verification successful!")
-            return  # Exit if successful
-        else:
-            print("Retrying after a short pause...")
+        # Verify the hovertext content
+        assert "England" in hover_data.text
+        assert "Disparity" in hover_data.text
+    except (StaleElementReferenceException, TimeoutException,
+            NoSuchElementException, AssertionError) as e:
+        print(f"Hover or Verification Failed: {e}")

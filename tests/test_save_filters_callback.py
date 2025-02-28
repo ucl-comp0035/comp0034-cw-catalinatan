@@ -9,44 +9,6 @@ import dash_bootstrap_components as dbc
 
 
 @pytest.mark.parametrize(
-    """
-    Parameters
-    ----------
-    n_clicks : int
-        Number of times the save button is clicked.
-    custom_analysis_name : str
-        Custom name for the analysis.
-    region : str
-        Selected region for the analysis.
-    year : int
-        Selected year for the analysis.
-    occupation : str
-        Selected occupation for the analysis.
-    current_data : list
-        Current data of saved analyses.
-    current_menu_items : list
-        Current menu items in the dropdown.
-    expected_output : tuple
-        Expected output of the callback function.
-
-    Raises
-    ------
-        If the save button is not clicked.
-
-    Notes
-    -----
-    This function uses pytest to parameterize different test cases for the
-    save_filters callback function. It checks various scenarios such as saving
-    a new analysis with a custom name, saving with a default name, preventing
-    saving without selecting a region and year, preventing saving with a
-    duplicate name, and preventing saving without clicking the save button.
-
-
-    Returns
-    -------
-    tuple
-        The output of the save_filters callback function."""
-
     "n_clicks, custom_analysis_name, region, year, occupation, current_data,"
     "current_menu_items, expected_output",
     [
