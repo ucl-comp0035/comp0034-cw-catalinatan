@@ -7,6 +7,9 @@ from dash._utils import AttributeDict
 from src.callbacks import save_filters
 import dash_bootstrap_components as dbc
 
+# References:
+# https://plotly.com/blog/building-unit-tests-for-dash-applications/
+
 
 @pytest.mark.parametrize(
     "n_clicks, custom_analysis_name, region, year, occupation, current_data,"
