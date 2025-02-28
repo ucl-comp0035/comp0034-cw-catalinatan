@@ -33,13 +33,11 @@ filters_buttons_row = dbc.Row(
                         dbc.Col(analysis_name_input, width="4"),
                         # Save filters button group
                         dbc.Col(
-                            dbc.ButtonGroup(
-                                [
-                                    save_filters_button,
-                                    save_filters_tooltip,
-                                    save_filters_alert_message,
-                                ]
-                            ),
+                            [
+                                save_filters_button,
+                                save_filters_tooltip,
+                                save_filters_alert_message,
+                            ],
                             width="auto",
                         ),
                     ],
@@ -52,7 +50,7 @@ filters_buttons_row = dbc.Row(
         ),
         # Clear button group
         dbc.Col(
-            dbc.ButtonGroup([clear_button, clear_button_tooltip]),
+            [clear_button, clear_button_tooltip],
             width="auto",
             className="me-2",
         ),
