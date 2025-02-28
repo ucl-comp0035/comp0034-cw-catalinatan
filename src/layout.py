@@ -49,15 +49,17 @@ app_layout = dbc.Container([
     dbc.Row([
         dbc.Col(
             dbc.Card(
-                dbc.CardBody(dcc.Loading(id='bar-chart-card-content')),
+                dbc.CardBody(dcc.Loading(id='bar-chart-card-content'), id='bar-chart-card-body'),
                 className="chart-card top-chart-card",
+                id="bar-chart-card"
             ),
             width=6,
         ),
         dbc.Col(
             dbc.Card(
-                dbc.CardBody(dcc.Loading(id='pie-chart-card-content')), 
-                className="chart-card top-chart-card"
+                dbc.CardBody(dcc.Loading(id='pie-chart-card-content'), id='pie-chart-card-body'), 
+                className="chart-card top-chart-card",
+                id="pie-chart-card"
             ),
             width=6,
         )
@@ -69,14 +71,15 @@ app_layout = dbc.Container([
                 dbc.CardBody([
                     dcc.Loading(id='disparity-map-card-content'),
                     occupation_type_slider
-                ])
-            ], className="chart-card bottom-chart-card"),
+                ], id='disparity-map-card-body')
+            ], className="chart-card bottom-chart-card", id="disparity-map-card"),
             width=6,
         ),
         dbc.Col(
             dbc.Card(
-                dbc.CardBody(dcc.Loading(id='stacked-area-chart-card-content')),
-                className="chart-card bottom-chart-card"
+                dbc.CardBody(dcc.Loading(id='stacked-area-chart-card-content'), id='stacked-area-chart-card-body'),
+                className="chart-card bottom-chart-card",
+                id="stacked-area-chart-card"
             ),
             width=6,
         )

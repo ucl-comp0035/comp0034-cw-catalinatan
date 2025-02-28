@@ -307,7 +307,7 @@ def register_callbacks(app):
             # Call your function to create the bar chart
             bar_chart_figure = create_bar_chart(filtered_df, selected_region, selected_year)
 
-            return dcc.Graph(figure=bar_chart_figure)
+            return dcc.Graph(id="bar-chart",figure=bar_chart_figure)
     
     @app.callback(
         Output('pie-chart-card-content', 'children'),
@@ -329,7 +329,7 @@ def register_callbacks(app):
                 region=selected_region, year=selected_year)
             disparity_df = prepare_disparity_df(filtered_df)
             pie_chart_figure = create_pie_chart(disparity_df, selected_region, selected_year)
-            return dcc.Graph(figure=pie_chart_figure)
+            return dcc.Graph(id="pie-chart",figure=pie_chart_figure)
     
     @app.callback(
         Output("disparity-map-card-content", "children"),
@@ -355,7 +355,7 @@ def register_callbacks(app):
             )
             disparity_df = prepare_disparity_df(filtered_df)
             disparity_map_figure = create_disparity_map(disparity_df, selected_year)
-            return dcc.Graph(figure=disparity_map_figure)
+            return dcc.Graph(id="disparity-map", figure=disparity_map_figure)
 
     
     @app.callback(
@@ -377,7 +377,7 @@ def register_callbacks(app):
             filtered_df = filter_dataframe(region=selected_region)
             disparity_df = prepare_disparity_df(filtered_df)
             area_chart_figure = create_area_chart(disparity_df, selected_region)
-            return dcc.Graph(figure=area_chart_figure)
+            return dcc.Graph(id="stacked-area-chart",figure=area_chart_figure)
             
     @app.callback(
         Output("gen-selected-region", "children"),
