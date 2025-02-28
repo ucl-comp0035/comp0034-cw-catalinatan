@@ -4,9 +4,8 @@ setuptools-scm
 pandas
 openpyxl
 plotly
-dash
-dash-daq
-dash-bootstrap-components
+dash==2.18.2
+dash-bootstrap-components==1.7.1
 psutil
 # For the Flask app in weeks 6 to 10
 flask

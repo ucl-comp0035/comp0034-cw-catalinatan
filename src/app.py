@@ -2,7 +2,6 @@ from dash import Dash
 import dash_bootstrap_components as dbc
 from layout import app_layout
 from callbacks import register_callbacks
-# import dash_daq as daq
 
 # Define meta tags for the viewport
 meta_tags = [
@@ -11,10 +10,23 @@ meta_tags = [
 
 # Define external stylesheets, using Bootstrap styling from
 # dash_bootstrap_components (dbc)
-external_stylesheets = [dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP, 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css']
-external_scripts = [{'src': 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.0/html2canvas.min.js'}]
+external_stylesheets = [
+    dbc.themes.BOOTSTRAP,
+    dbc.icons.BOOTSTRAP,
+    'https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css'
+]
 
-# Initialize the Dash app with external stylesheets and meta tags
+# Define external scripts, including html2canvas for capturing screenshots
+external_scripts = [
+    {
+        'src': (
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.0/'
+            'html2canvas.min.js'
+        )
+    }
+]
+
+# Create and configure the Dash app
 app = Dash(
     __name__,
     external_stylesheets=external_stylesheets,
