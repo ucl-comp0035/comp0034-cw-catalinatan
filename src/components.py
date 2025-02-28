@@ -111,7 +111,8 @@ display_summary_tooltip = dbc.Tooltip(
         "Summarise gender and occupation statistics",  # Tooltip text
         target="display-summary-button",  # Connects to the button ID
         placement="top",  # Adjust as needed (top, bottom, left, right)
-        className="custom-tooltip"  # Custom CSS class for styling
+        className="custom-tooltip",  # Custom CSS class for styling, 
+        id="display-summary-tooltip"
         )
 
 
@@ -304,7 +305,7 @@ occupation_stats = dbc.Card(
                     " in ",
                     html.Span(id='occ-selected-year', className="fw-bold")])
                 ],
-                className="custom-location-header-style"
+                className="custom-location-header-style", id="occ-location-header"
             ),
             
             # Highest Employment Section
@@ -421,8 +422,8 @@ summary_stats = html.Div([
     dbc.Collapse(
         dcc.Tabs(
             children=[
-                dcc.Tab(label='Gender Disparity Statistics', children=[gender_disparity_stats]),
-                dcc.Tab(label='Occupation Statistics', children=[occupation_stats]),
+                dcc.Tab(label='Gender Disparity Statistics', children=[gender_disparity_stats],id="gender-disparity-tab"),
+                dcc.Tab(label='Occupation Statistics', children=[occupation_stats],id="occupation-stats-tab"),
             ],
             className="tab-container",
             parent_className="custom-tabs",
@@ -431,8 +432,7 @@ summary_stats = html.Div([
         id="summary-stats",
         is_open=False
     ),
-    dcc.Download(id="export-stats")
-], className="shadow tab-content")
+], className="shadow tab-content", id="summary-stats-container")
 
 data_attribution = html.Div(
     [

@@ -86,8 +86,8 @@ app_layout = dbc.Container([
     ]),
 
     dbc.Row([
-        dbc.Col(summary_stats),  # Add summary_stats component
-    ]),
+        dbc.Col(summary_stats, id="summary-stats-column"),  # Add summary_stats component
+    ], id="summary-stats-row"),
 
     dcc.Store(id='saved-analyses-store', data=[])
 ])
