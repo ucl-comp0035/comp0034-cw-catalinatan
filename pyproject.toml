@@ -4,10 +4,6 @@ name = "comp0034-tutorials"
 version = "2025.0.1"
 readme = "README.md"
 
-[build-system]
-requires = ["setuptools",  "setuptools_scm"]
-build-backend = "setuptools.build_meta"
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-rA -v"
