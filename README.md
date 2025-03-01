@@ -21,11 +21,32 @@ pytest
 - `test_clear_analysis_callback.py`: Tests the clear analysis name callback function.
 - `conftest.py`: Contains common fixtures for the tests.
 
+### Setting Up a Virtual Environment
+
+1. **Create a virtual environment**:
+    ```sh
+    python3 -m venv venv
+    ```
+
+2. **Activate the virtual environment**:
+    - On macOS and Linux:
+        ```sh
+        source venv/bin/activate
+        ```
+    - On Windows:
+        ```sh
+        venv\Scripts\activate
+        ```
+
 ### Installing Dependencies
-Before running the tests, make sure to install the necessary dependencies, including dash[testing]:
+Before running the tests, make sure to install the necessary dependencies, including dash[testing] or dash\[testing]
 
 ```bash
 pip install dash[testing]
+```
+
+```bash
+pip install dash\[testing]
 ```
 
 ## Installing the Project
